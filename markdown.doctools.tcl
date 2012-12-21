@@ -47,18 +47,15 @@ proc mddt_setup_1 {} {
 	# fmt_call and fmt_usage should also be scanned in
 	# pass 1 to accumulate synopsis listings.
 	# Note that their arguments may be formatted with other markup commands,
-	# though, so we do need to invoke those somehow. Consult other plugins…
+	# though, so we do need to invoke those somehow.
 	
-	# when it is time to output synopsis (pass 2), cached synopsis values
-	# (call instances) are passed to Text, which appends them to a `para`
-	# buffer, which is then 
-	
-	# god, the built-in formatters really ARE fuckin spaghetti code.
-	# the inconsistent indentation really inhibits readability, too.
-	
-	# section and subsection should maybe be pre-scanned as well,
-	# to populate the table of contents.
-	
+	# note: "If more than one pass is required to perform the formatting only
+	# the output of the last pass is relevant. The output of all the previous,
+	# preparatory passes is ignored." Soooo, text markup commands could be
+	# active permanently. On pass one, they'd only meaningfully be used to
+	# format text that get scanned eg for synopsis, such as call or usage args.
+	# With this approach, only the docinfo commands (and others that scan on
+	# pass one) may need to be toggled.
 	
 	# name of document category (single string)
 	proc fmt_category {text} {
@@ -113,7 +110,7 @@ proc mddt_setup_1 {} {
 	
 	# text structure
 	proc fmt_arg_def {type name {mode {}}} {}
-	proc fmt_call {args} {}							; # scan for synopsis
+	proc fmt_call {args} {} ; # scan for synopsis
 	proc fmt_cmd_def {command} {}
 	proc fmt_def {text} {}
 	proc fmt_description {} {}
@@ -126,8 +123,8 @@ proc mddt_setup_1 {} {
 	proc fmt_list_end {} {}
 	proc fmt_opt_def {name {arg {}}} {}
 	proc fmt_para {} {}
-	proc fmt_section {name} {}						; # scan for toc
-	proc fmt_subsection {name} {}					; # scan for toc
+	proc fmt_section {name} {} ; # scan for toc
+	proc fmt_subsection {name} {} ; # scan for toc
 	proc fmt_tkoption_def {name dbname dbclass} {}	
 	
 	# text markup
@@ -150,7 +147,7 @@ proc mddt_setup_1 {} {
 	proc fmt_term {text} {}
 	proc fmt_type {text} {}
 	proc fmt_uri {uri {label {}}} {}
-	proc fmt_usage {args} {}						; # scan for synopsis
+	proc fmt_usage {args} {} ; # scan for synopsis
 	proc fmt_var {text} {}
 	proc fmt_widget {text} {}
 	
@@ -327,20 +324,8 @@ proc mddt_setup_2 {} {
 	}
 	
 	# deprecated
-	
-	proc fmt_bullet {} {
-		return [fmt_list]
-	}
-	
-	proc fmt_lst_item {text} {
-		return [fmt_def $text]
-	}
-	
-	proc fmt_nl {} {
-		return [fmt_para]
-	}
-	
-	proc fmt_strong {text} {
-		return [fmt_emph $text]
-	}
+	proc fmt_bullet {} {fmt_list}
+	proc fmt_lst_item {text} {fmt_def $text}
+	proc fmt_nl {} {fmt_para}
+	proc fmt_strong {text} {fmt_emph $text}
 }
