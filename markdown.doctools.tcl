@@ -324,7 +324,7 @@ proc mddt_setup_2 {} {
 	}
 	
 	# deprecated
-	proc fmt_bullet {} {fmt_list}
+	proc fmt_bullet {} {fmt_item}
 	proc fmt_lst_item {text} {fmt_def $text}
 	proc fmt_nl {} {fmt_para}
 	proc fmt_strong {text} {fmt_emph $text}
