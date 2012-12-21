@@ -1,3 +1,5 @@
+package require textutil
+
 #
 # MANAGEMENT COMMANDS
 #
@@ -56,6 +58,10 @@ proc mddt_setup_1 {} {
 	# format text that get scanned eg for synopsis, such as call or usage args.
 	# With this approach, only the docinfo commands (and others that scan on
 	# pass one) may need to be toggled.
+	
+	# built-in text formatter doesn't return text, but rather stores it all
+	# in a cmds "display list" global, which it finally processes & returns
+	# from fmt_postprocess.
 	
 	# name of document category (single string)
 	proc fmt_category {text} {
@@ -121,6 +127,8 @@ proc mddt_setup_1 {} {
 	proc fmt_item {} {}
 	proc fmt_list_begin {type} {}
 	proc fmt_list_end {} {}
+	proc fmt_manpage_begin {command section version} {}
+	proc fmt_manpage_end {} {}
 	proc fmt_opt_def {name {arg {}}} {}
 	proc fmt_para {} {}
 	proc fmt_section {name} {} ; # scan for toc
@@ -173,7 +181,129 @@ proc mddt_setup_2 {} {
 	proc fmt_titledesc {text} {}
 	
 	#
-	# Text structure and markup commands active
+	# Text structure commands
+	#
+	
+	proc fmt_arg_def {type name {mode {}}} {
+		# arguments dl list element
+	}
+	
+	proc fmt_call {args} {
+		# general dl list element
+	}
+	
+	proc fmt_cmd_def {command} {
+		# commands dl list element
+	}
+	
+	proc fmt_def {text} {
+		# general dl list element
+	}
+	
+	proc fmt_description {} {
+		# Output requirements and synopsis from docinfo…
+		# "Implicitly starts a section named "DESCRIPTION""
+		fmt_section "DESCRIPTION"
+	}
+	
+	proc fmt_enum {} {
+		# enumerated ol list element
+	}
+	
+	proc fmt_example {text} {
+		return [::textutil::indent $text "    "]
+	}
+	
+	proc fmt_example_begin {} {
+		# set some kind of mode flag that causes everything to be indented…
+	}
+	
+	proc fmt_example_end {} {
+		# …unset indent-everything mode flag.
+	}
+	
+	proc fmt_item {} {
+		# itemized ul list element
+	}
+	
+	proc fmt_list_begin {type} {
+		# start a list. Set some kind of mode flag indicating we're in a list
+		# (relative to current context, I suppose, to support nested lists.)
+		switch $type {
+			arg -
+			args -
+			arguments {
+				# arg_def (dl)
+			}
+			cmd -
+			cmds -
+			commands {
+				# cmd_def (dl)
+			}
+			definitions {
+				# def or call (dl)
+			}
+			enum -
+			enumerated {
+				# enum (ol)
+			}
+			bullet -
+			item -
+			itemized {
+				# item (ul)
+			}
+			opt -
+			opts -
+			options {
+				# opt_def (dl)
+			}
+			tkoption -
+			tkoptions {
+				# tkoption_def (dl)
+			}
+			default {
+				error "unknown list type $type"
+			}
+		}
+	}
+	
+	proc fmt_list_end {} {
+		# close current list
+	}
+	
+	proc fmt_manpage_begin {command section version} {
+		# output header
+	}
+	
+	proc fmt_manpage_end {} {
+		# output footer
+	}
+	
+	proc fmt_opt_def {name {arg {}}} {
+		# options dl list element
+	}
+	
+	proc fmt_para {} {
+		# paragraph - empty line
+		return "\n\n"
+	}
+	
+	proc fmt_section {name} {
+		# h1
+		return "# $name"
+	}
+	
+	proc fmt_subsection {name} {
+		# h2
+		return "## $name"
+	}
+	
+	proc fmt_tkoption_def {name dbname dbclass} {
+		# tkoptions dl list element
+	}
+	
+	#
+	# Text markup commands
 	#
 	
 	# plain text with no markup
@@ -270,7 +400,6 @@ proc mddt_setup_2 {} {
 			set label $id
 		}
 		# strong link
-		# (should link to id, using GitHub's anchor form of id)
 		return "**$label**"
 	}
 
