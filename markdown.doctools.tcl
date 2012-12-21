@@ -44,51 +44,46 @@ proc mddt_setup_1 {} {
 	# Document information commands active
 	#
 	
-	# name of document category
+	# name of document category (single string)
 	proc fmt_category {text} {
 		global docinfo
-		# "If this command is used multiple times the last value specified is used."
 		dict set docinfo category $text
 	}
 
-	# document copyright
+	# document copyright (list of strings)
 	proc fmt_copyright {text} {
 		global docinfo
-		# "When invoked more than once the assignments are accumulated."
 		dict lappend docinfo copyright $text
 	}
 	
-	# document keyword list
+	# document keywords (list of strings)
 	proc fmt_keywords {args} {
 		global docinfo
-		# "If this command is used multiple times al the arguments accumulate."
 		dict lappend docinfo keywords {*}$args
 	}
 
-	# document module description
+	# document module description (single string)
 	proc fmt_moddesc {text} {
 		global docinfo
 		dict set docinfo moddesc $text
-		# titledesc "defaults to the value registered by moddesc."
 		if {[dict get $docinfo titledesc] eq {}} {
 			dict set docinfo titledesc $text
 		}
 	}
 
-	# package requirement of document module
+	# package requirements of document module (list of {package version} lists)
 	proc fmt_require {package {version {}}} {
 		global docinfo
 		dict lappend docinfo require [list $package $version]
 	}
 
-	# cross-references to other documents
+	# cross-references to other documents (list of strings)
 	proc fmt_see_also {args} {
 		global docinfo
-		# "If this command is used multiple times all the arguments accumulate."
 		dict lappend docinfo see_also {*}$args
 	}
 
-	# document description (defaults to fmt_moddesc)
+	# document description (single string; defaults to moddesc)
 	proc fmt_titledesc {text} {
 		global docinfo
 		dict set docinfo titledesc $text
