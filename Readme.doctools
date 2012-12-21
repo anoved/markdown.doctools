@@ -1,0 +1,12 @@
+[manpage_begin markdown.doctools 3 0.1]
+[moddesc "Markdown module for Doctools."]
+[description]
+
+The Markdown version of this Readme ([file Readme.markdown]) is generated from the Doctools version ([file Readme.doctools]) using the [file markdown.doctools.tcl] Doctools module. The Doctools [option -format] option accepts module filenames as well as built-in format types; configure with something like this:
+
+[example {
+package require doctools
+::doctools::new doc -format markdown.doctools.tcl
+}]
+
+[manpage_end]
