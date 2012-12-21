@@ -18,7 +18,7 @@ proc fmt_varset {varname value} {
 
 proc fmt_initialize {} {
 	global docinfo
-	set docinfo [dict create category {} copyright {} keywords {} moddesc {} require {} see_also {} titledesc {}]
+	set docinfo [dict create category {} copyright {} keywords {} moddesc {} require {} see_also {} titledesc {} synopsis {}]
 }
 
 proc fmt_setup {pass} {
@@ -31,7 +31,7 @@ proc fmt_postprocess {text} {
 
 proc fmt_shutdown {} {
 	global docinfo
-	dict unset category copyright keywords moddesc require see_also titledesc
+	dict unset category copyright keywords moddesc require see_also titledesc synopsis
 }
 
 #
@@ -43,6 +43,22 @@ proc mddt_setup_1 {} {
 	#
 	# Document information commands active
 	#
+	
+	# fmt_call and fmt_usage should also be scanned in
+	# pass 1 to accumulate synopsis listings.
+	# Note that their arguments may be formatted with other markup commands,
+	# though, so we do need to invoke those somehow. Consult other plugins…
+	
+	# when it is time to output synopsis (pass 2), cached synopsis values
+	# (call instances) are passed to Text, which appends them to a `para`
+	# buffer, which is then 
+	
+	# god, the built-in formatters really ARE fuckin spaghetti code.
+	# the inconsistent indentation really inhibits readability, too.
+	
+	# section and subsection should maybe be pre-scanned as well,
+	# to populate the table of contents.
+	
 	
 	# name of document category (single string)
 	proc fmt_category {text} {
@@ -94,7 +110,27 @@ proc mddt_setup_1 {} {
 	#
 	
 	proc fmt_plain_text {text} {}
-	# ... plus text structure commands ...
+	
+	# text structure
+	proc fmt_arg_def {type name {mode {}}} {}
+	proc fmt_call {args} {}							; # scan for synopsis
+	proc fmt_cmd_def {command} {}
+	proc fmt_def {text} {}
+	proc fmt_description {} {}
+	proc fmt_enum {} {}
+	proc fmt_example {text} {}
+	proc fmt_example_begin {} {}
+	proc fmt_example_end {} {}
+	proc fmt_item {} {}
+	proc fmt_list_begin {type} {}
+	proc fmt_list_end {} {}
+	proc fmt_opt_def {name {arg {}}} {}
+	proc fmt_para {} {}
+	proc fmt_section {name} {}						; # scan for toc
+	proc fmt_subsection {name} {}					; # scan for toc
+	proc fmt_tkoption_def {name dbname dbclass} {}	
+	
+	# text markup
 	proc fmt_arg {text} {}
 	proc fmt_class {text} {}
 	proc fmt_cmd {text} {}
@@ -114,9 +150,15 @@ proc mddt_setup_1 {} {
 	proc fmt_term {text} {}
 	proc fmt_type {text} {}
 	proc fmt_uri {uri {label {}}} {}
-	proc fmt_usage {args} {}
+	proc fmt_usage {args} {}						; # scan for synopsis
 	proc fmt_var {text} {}
 	proc fmt_widget {text} {}
+	
+	# deprecated
+	proc fmt_bullet {} {}
+	proc fmt_lst_item {text} {}
+	proc fmt_nl {} {}
+	proc fmt_strong {text} {}
 }
 
 proc mddt_setup_2 {} {
@@ -270,12 +312,7 @@ proc mddt_setup_2 {} {
 
 	# syntax of a command (first arg) with arguments (remainder of args)
 	# like call, but silent; used only to populate synopsis
-	# possibly fmt_call can use fmt_usage, plus list management stuff
-	proc fmt_usage {args} {
-		# presumably the doctools frontend knows to keep quiet and insert in synopsis?
-		# args are presumably already formatted with appropriate cmd, arg, etc commands.
-		return [join $args]
-	}
+	proc fmt_usage {args} {}
 
 	# name of a variable
 	proc fmt_var {text} {
@@ -289,17 +326,21 @@ proc mddt_setup_2 {} {
 		return "`$text`"
 	}
 	
+	# deprecated
+	
+	proc fmt_bullet {} {
+		return [fmt_list]
+	}
+	
+	proc fmt_lst_item {text} {
+		return [fmt_def $text]
+	}
+	
+	proc fmt_nl {} {
+		return [fmt_para]
+	}
+	
+	proc fmt_strong {text} {
+		return [fmt_emph $text]
+	}
 }
-
-# Document Info
-# We have to process (and insert) the information from these commands into
-# the output document ourself. This is evidently the reason for the multi-pass
-# processing design; one pass scans for these, then the second pass outputs them
-# and processes the rest of the document as well.
-
-# First pass: these document info procs are defined to accumulate/store values;
-# all other formatting commands (text structure and text markup) are no-ops.
-
-# Second pass: these document info procs are defined to be no-ops; all others
-# perform as usual. Insert cached document info values as appropriate - into
-# manpage_begin (header), manpage_end (footer), or at beginning of description.
