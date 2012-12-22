@@ -123,7 +123,7 @@ proc mddt_setup_1 {} {
 	proc fmt_example_begin {} {}
 	proc fmt_example_end {} {}
 	proc fmt_item {} {}
-	proc fmt_list_begin {type} {}
+	proc fmt_list_begin {type {fuck {}}} {}
 	proc fmt_list_end {} {}
 	proc fmt_manpage_begin {command section version} {}
 	proc fmt_manpage_end {} {}
@@ -245,9 +245,10 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_item {} {
 		# itemized ul list element
+		return "\n- "
 	}
 	
-	proc fmt_list_begin {type} {
+	proc fmt_list_begin {type {fuck {}}} {
 		# start a list. Set some kind of mode flag indicating we're in a list
 		# (relative to current context, I suppose, to support nested lists.)
 		switch $type {
@@ -255,41 +256,60 @@ proc mddt_setup_2 {} {
 			args -
 			arguments {
 				# arg_def (dl)
+				ex_cpush list
+				ex_cset type arguments
 			}
 			cmd -
 			cmds -
 			commands {
 				# cmd_def (dl)
+				ex_cpush list
+				ex_cset type commands
 			}
 			definitions {
 				# def or call (dl)
+				ex_cpush list
+				ex_cset type definitions
 			}
 			enum -
 			enumerated {
 				# enum (ol)
+				ex_cpush list
+				ex_cset type enumerated
 			}
 			bullet -
 			item -
 			itemized {
 				# item (ul)
+				ex_cpush list
+				ex_cset type enumerated
 			}
 			opt -
 			opts -
 			options {
 				# opt_def (dl)
+				ex_cpush list
+				ex_cset type options
 			}
 			tkoption -
 			tkoptions {
 				# tkoption_def (dl)
+				ex_cpush list
+				ex_cset type tkoptions
 			}
 			default {
 				error "unknown list type $type"
 			}
 		}
+		
+		return "\n"
 	}
 	
 	proc fmt_list_end {} {
 		# close current list
+		# so in THIS case, ex_cpop seems to indeed return the accumulated
+		# output (unlike with example).
+		return "[ex_cpop list]\n\n"
 	}
 	
 	proc fmt_manpage_begin {command section version} {
