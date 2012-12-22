@@ -27,8 +27,8 @@ proc fmt_setup {pass} {
 
 proc fmt_postprocess {text} {
 	# collapse multiple blank lines to one (a cheat for sloppiness elsewhere!)
-	#return [regsub -all "\n{2,}" $text "\n\n"]
-	return $text
+	return [regsub -all "\n{2,}" $text "\n\n"]
+	#return $text
 }
 
 proc fmt_shutdown {} {
@@ -114,7 +114,7 @@ proc mddt_setup_1 {} {
 	
 	# text structure
 	proc fmt_arg_def {type name {mode {}}} {}
-	proc fmt_call {args} {} ; # scan for synopsis
+	proc fmt_call {cmd args} {} ; # scan for synopsis
 	proc fmt_cmd_def {command} {}
 	proc fmt_def {text} {}
 	proc fmt_description {id} {}
@@ -191,10 +191,14 @@ proc mddt_setup_2 {} {
 				set text [regsub -line -all -- {^} $text "\t"]
 			}
 			dl {
-				# standard processing…
+				
 				set text [regsub -all -- "\n+" $text {}]
-				# plus, blockquoting (buggy)
-				set text [regsub -line -all -- "^" $text "> "]
+				
+				# don't prefix the content if there is no line content
+				if {$text != {}} {
+					set text [regsub -line -all -- "^" $text "> "]
+				}
+				
 				# gaps in the bq appear from para (and other structural \n\n)
 				# the whole list element body, paragraph breaks and all, should
 				# be uniformly blockquoted. one way to do it might be with a
@@ -217,14 +221,17 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_arg_def {type name {mode {}}} {
 		# arguments dl list element
+		return "\n\n${type} ${name}\n\n"
 	}
 	
-	proc fmt_call {args} {
+	proc fmt_call {cmd args} {
 		# general dl list element
+		return "\n\n${cmd}\n\n"
 	}
 	
 	proc fmt_cmd_def {command} {
 		# commands dl list element
+		return "\n\n${command}\n\n"
 	}
 	
 	proc fmt_def {text} {
@@ -250,9 +257,6 @@ proc mddt_setup_2 {} {
 	#	# attempt to prefix lines of example text
 	#	return [regsub -all -line -- {^} $text "----"]
 	#}
-	
-	# want an easy way to suppress first and last newlines in example
-	# (other newlines within example code are not to be suppressed)
 	
 	proc fmt_example_begin {} {
 		ex_cpush example
@@ -337,6 +341,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_opt_def {name {arg {}}} {
 		# options dl list element
+		return "\n\n${name}\n\n"
 	}
 	
 	proc fmt_para {} {
@@ -356,6 +361,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_tkoption_def {name dbname dbclass} {
 		# tkoptions dl list element
+		return "\n\n${name}\n\n"
 	}
 	
 	#
