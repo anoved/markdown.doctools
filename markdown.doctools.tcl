@@ -183,18 +183,20 @@ proc mddt_setup_2 {} {
 		
 		switch [ex_cname] {
 			example {
-				# indent lines within example blocks
-				return [regsub -line -all -- {^} $text "\t"]
+				# first remove all leading newlines
+				set text [regsub "^\n+" $text {}]
+				# then remove all trailing newlines
+				set text [regsub "\n+$" $text {}]
+				# indent content of example block
+				set text [regsub -line -all -- {^} $text "\t"]
+			}
+			default {
+				# collapse all newlines except for explicit structural breaks
+				set text [regsub -all -- "\n+" $text {}]
 			}
 		}
-		
-		# collapse paragraphs; only para tag
-		# (and other explicit section breaks) should cause blank lines
-		# this should not be applied to text in example blocks, since
-		# they should appear exactly as formatted
-		return [regsub -all -- "\n+" $text {}]
-		
-		#return $text
+				
+		return $text
 	}
 
 	#
@@ -233,14 +235,16 @@ proc mddt_setup_2 {} {
 	#	return [regsub -all -line -- {^} $text "----"]
 	#}
 	
+	# want an easy way to suppress first and last newlines in example
+	# (other newlines within example code are not to be suppressed)
+	
 	proc fmt_example_begin {} {
 		ex_cpush example
 		return "\n\n"
 	}
 	
 	proc fmt_example_end {} {
-		ex_cpop example
-		return "\n\n"
+		return "[ex_cpop example]\n\n"
 	}
 	
 	proc fmt_item {} {
