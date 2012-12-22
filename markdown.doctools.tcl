@@ -123,7 +123,7 @@ proc mddt_setup_1 {} {
 	proc fmt_example_begin {} {}
 	proc fmt_example_end {} {}
 	proc fmt_item {} {}
-	proc fmt_list_begin {type {fuck {}}} {}
+	proc fmt_list_begin {type {hint {}}} {}
 	proc fmt_list_end {} {}
 	proc fmt_manpage_begin {command section version} {}
 	proc fmt_manpage_end {} {}
@@ -190,6 +190,18 @@ proc mddt_setup_2 {} {
 				# indent verbatim content of example block
 				set text [regsub -line -all -- {^} $text "\t"]
 			}
+			dl {
+				# standard processing…
+				set text [regsub -all -- "\n+" $text {}]
+				# plus, blockquoting (buggy)
+				set text [regsub -line -all -- "^" $text "> "]
+				# gaps in the bq appear from para (and other structural \n\n)
+				# the whole list element body, paragraph breaks and all, should
+				# be uniformly blockquoted. one way to do it might be with a
+				# sub-context, started by each list element marker; on pop,
+				# return the content with any prefixes (bq OR indentation, for
+				# nesting) applied
+			}
 			default {
 				# collapse all newlines except for explicit structural breaks
 				set text [regsub -all -- "\n+" $text {}]
@@ -217,6 +229,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_def {text} {
 		# general dl list element
+		return "\n\n${text}\n\n"
 	}
 	
 	proc fmt_description {id} {
@@ -255,7 +268,8 @@ proc mddt_setup_2 {} {
 		return "\n- "
 	}
 	
-	proc fmt_list_begin {type {fuck {}}} {
+	# hint is undocumented
+	proc fmt_list_begin {type {hint {}}} {
 		# start a list. Set some kind of mode flag indicating we're in a list
 		# (relative to current context, I suppose, to support nested lists.)
 		switch $type {
@@ -263,40 +277,40 @@ proc mddt_setup_2 {} {
 			args -
 			arguments {
 				# arg_def (dl)
-				ex_cpush list
+				ex_cpush dl
 			}
 			cmd -
 			cmds -
 			commands {
 				# cmd_def (dl)
-				ex_cpush list
+				ex_cpush dl
 			}
 			definitions {
 				# def or call (dl)
-				ex_cpush list
+				ex_cpush dl
 			}
 			enum -
 			enumerated {
 				# enum (ol)
-				ex_cpush list
+				ex_cpush ol
 				ex_cset enum 0
 			}
 			bullet -
 			item -
 			itemized {
 				# item (ul)
-				ex_cpush list
+				ex_cpush ul
 			}
 			opt -
 			opts -
 			options {
 				# opt_def (dl)
-				ex_cpush list
+				ex_cpush dl
 			}
 			tkoption -
 			tkoptions {
 				# tkoption_def (dl)
-				ex_cpush list
+				ex_cpush dl
 			}
 			default {
 				error "unknown list type $type"
@@ -308,9 +322,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_list_end {} {
 		# close current list
-		# so in THIS case, ex_cpop seems to indeed return the accumulated
-		# output (unlike with example).
-		return "[ex_cpop list]\n\n"
+		return "[ex_cpop [ex_cname]]\n\n"
 	}
 	
 	proc fmt_manpage_begin {command section version} {
