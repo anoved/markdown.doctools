@@ -1,4 +1,27 @@
-package require textutil
+# Important note for Doctools plugin authors:
+# The reference at http://tcllib.sourceforge.net/doc/doctools_plugin_apiref.html
+# is seriously incomplete. It implies some procedures should be defined which
+# should not (eg fmt_example), and fails to document other procedures (such as
+# dt_package) and procedure arguments (such as fmt_description's). You must
+# consult the doctools code (which has a spaghetti smell) to understand what
+# procedures must be provided and what their context and behavior should be.
+
+# doctools *does* track state (eg, whether pass parsing is inside an example
+# block or a list) via combination of the `state` and `lstctx`/`lstitem` vars
+# in doctools/checker.tcl. But do we have access to these useful authoritative
+# state variables from within the formatting plugin? It would be ridiculously
+# stupid to keep track of this state, and not make that very useful information
+# available to formatting engine that actually needs to make formatting
+# decisions based on the current state. This state of affairs seems to
+# encourage error-prone repetition of state tracking at different levels, as
+# done in the built-in formatting engines.
+
+# the state tracking is done in the "checker", which is not the same interp as
+# the "formatter" used to process the output. DERRRRRRRP. Lost opportunity.
+
+# discovering all the problems with doctools (especially the poorly maintained
+# documentation and ad hoc code style) makes me lose interesting in developing
+# new plugins for it. It doesn't seem like quality software.
 
 #
 # MANAGEMENT COMMANDS
@@ -32,8 +55,6 @@ proc fmt_postprocess {text} {
 }
 
 proc fmt_shutdown {} {
-	global docinfo
-	dict unset category copyright keywords moddesc require see_also titledesc synopsis
 }
 
 #
@@ -119,7 +140,7 @@ proc mddt_setup_1 {} {
 	proc fmt_call {args} {} ; # scan for synopsis
 	proc fmt_cmd_def {command} {}
 	proc fmt_def {text} {}
-	proc fmt_description {} {}
+	proc fmt_description {id} {}
 	proc fmt_enum {} {}
 	proc fmt_example {text} {}
 	proc fmt_example_begin {} {}
@@ -200,26 +221,34 @@ proc mddt_setup_2 {} {
 		# general dl list element
 	}
 	
-	proc fmt_description {} {
+	proc fmt_description {id} {
 		# Output requirements and synopsis from docinfo…
 		# "Implicitly starts a section named "DESCRIPTION""
-		fmt_section "DESCRIPTION"
+		return "[fmt_section DESCRIPTION]\n[ex_cname]"
 	}
 	
 	proc fmt_enum {} {
 		# enumerated ol list element
 	}
 	
-	proc fmt_example {text} {
-		return [::textutil::indent $text "    "]
-	}
+	# contrary to documentation, no fmt_example is supported. Instances of
+	# [example] are internally wrapped as [example_begin][example_end] blocks.
+	#proc fmt_example {text} {
+	#	# attempt to prefix lines of example text
+	#	return [regsub -all -line -- {^} $text "----"]
+	#}
 	
 	proc fmt_example_begin {} {
 		# set some kind of mode flag that causes everything to be indented…
+		ex_cpush example
 	}
 	
 	proc fmt_example_end {} {
 		# …unset indent-everything mode flag.
+		# ex_cpop does *not* return output accumulated during the context
+		set exampleText [ex_cpop example]
+		# prefix the exampleText…
+		return ">> $exampleText <<"
 	}
 	
 	proc fmt_item {} {
@@ -272,7 +301,9 @@ proc mddt_setup_2 {} {
 	}
 	
 	proc fmt_manpage_begin {command section version} {
+		global docinfo
 		# output header
+		return [fmt_section "$command $version - [dict get $docinfo titledesc]"]
 	}
 	
 	proc fmt_manpage_end {} {
@@ -285,7 +316,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_para {} {
 		# paragraph - empty line
-		return "\n\n"
+		return "[ex_cname]\n"
 	}
 	
 	proc fmt_section {name} {
@@ -308,6 +339,9 @@ proc mddt_setup_2 {} {
 	
 	# plain text with no markup
 	proc fmt_plain_text {text} {
+		if {[ex_cis example]} {
+			return [regsub -line -all -- {^} $text "----"]
+		}
 		return $text
 	}
 	
@@ -395,6 +429,7 @@ proc mddt_setup_2 {} {
 	}
 
 	# reference to section id, possibly with label
+	# another stupid doctools quirk: fmt_sectref gets args in reverse order of [sectref]
 	proc fmt_sectref {id {label {}}} {
 		if {$label eq {}} {
 			set label $id
