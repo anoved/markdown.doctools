@@ -1,28 +1,3 @@
-# Important note for Doctools plugin authors:
-# The reference at http://tcllib.sourceforge.net/doc/doctools_plugin_apiref.html
-# is seriously incomplete. It implies some procedures should be defined which
-# should not (eg fmt_example), and fails to document other procedures (such as
-# dt_package) and procedure arguments (such as fmt_description's). You must
-# consult the doctools code (which has a spaghetti smell) to understand what
-# procedures must be provided and what their context and behavior should be.
-
-# doctools *does* track state (eg, whether pass parsing is inside an example
-# block or a list) via combination of the `state` and `lstctx`/`lstitem` vars
-# in doctools/checker.tcl. But do we have access to these useful authoritative
-# state variables from within the formatting plugin? It would be ridiculously
-# stupid to keep track of this state, and not make that very useful information
-# available to formatting engine that actually needs to make formatting
-# decisions based on the current state. This state of affairs seems to
-# encourage error-prone repetition of state tracking at different levels, as
-# done in the built-in formatting engines.
-
-# the state tracking is done in the "checker", which is not the same interp as
-# the "formatter" used to process the output. DERRRRRRRP. Lost opportunity.
-
-# discovering all the problems with doctools (especially the poorly maintained
-# documentation and ad hoc code style) makes me lose interesting in developing
-# new plugins for it. It doesn't seem like quality software.
-
 #
 # MANAGEMENT COMMANDS
 #
@@ -51,6 +26,8 @@ proc fmt_setup {pass} {
 }
 
 proc fmt_postprocess {text} {
+	# collapse multiple blank lines to one (a cheat for sloppiness elsewhere!)
+	#return [regsub -all "\n{2,}" $text "\n\n"]
 	return $text
 }
 
@@ -152,8 +129,8 @@ proc mddt_setup_1 {} {
 	proc fmt_manpage_end {} {}
 	proc fmt_opt_def {name {arg {}}} {}
 	proc fmt_para {} {}
-	proc fmt_section {name} {} ; # scan for toc
-	proc fmt_subsection {name} {} ; # scan for toc
+	proc fmt_section {name {id {}}} {} ; # scan for toc
+	proc fmt_subsection {name {id {}}} {} ; # scan for toc
 	proc fmt_tkoption_def {name dbname dbclass} {}	
 	
 	# text markup
@@ -201,6 +178,25 @@ proc mddt_setup_2 {} {
 	proc fmt_see_also {args} {}
 	proc fmt_titledesc {text} {}
 	
+	# plain text (context dependent)
+	proc fmt_plain_text {text} {
+		
+		switch [ex_cname] {
+			example {
+				# indent lines within example blocks
+				return [regsub -line -all -- {^} $text "\t"]
+			}
+		}
+		
+		# collapse paragraphs; only para tag
+		# (and other explicit section breaks) should cause blank lines
+		# this should not be applied to text in example blocks, since
+		# they should appear exactly as formatted
+		return [regsub -all -- "\n+" $text {}]
+		
+		#return $text
+	}
+
 	#
 	# Text structure commands
 	#
@@ -222,9 +218,8 @@ proc mddt_setup_2 {} {
 	}
 	
 	proc fmt_description {id} {
-		# Output requirements and synopsis from docinfo…
 		# "Implicitly starts a section named "DESCRIPTION""
-		return "[fmt_section DESCRIPTION]\n[ex_cname]"
+		return [fmt_section DESCRIPTION]
 	}
 	
 	proc fmt_enum {} {
@@ -239,16 +234,13 @@ proc mddt_setup_2 {} {
 	#}
 	
 	proc fmt_example_begin {} {
-		# set some kind of mode flag that causes everything to be indented…
 		ex_cpush example
+		return "\n\n"
 	}
 	
 	proc fmt_example_end {} {
-		# …unset indent-everything mode flag.
-		# ex_cpop does *not* return output accumulated during the context
-		set exampleText [ex_cpop example]
-		# prefix the exampleText…
-		return ">> $exampleText <<"
+		ex_cpop example
+		return "\n\n"
 	}
 	
 	proc fmt_item {} {
@@ -303,7 +295,7 @@ proc mddt_setup_2 {} {
 	proc fmt_manpage_begin {command section version} {
 		global docinfo
 		# output header
-		return [fmt_section "$command $version - [dict get $docinfo titledesc]"]
+		return [fmt_section "$command - [dict get $docinfo titledesc]"]
 	}
 	
 	proc fmt_manpage_end {} {
@@ -316,17 +308,17 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_para {} {
 		# paragraph - empty line
-		return "[ex_cname]\n"
+		return "\n\n"
 	}
 	
-	proc fmt_section {name} {
+	proc fmt_section {name {id {}}} {
 		# h1
-		return "# $name"
+		return "# $name\n\n"
 	}
 	
-	proc fmt_subsection {name} {
+	proc fmt_subsection {name {id {}}} {
 		# h2
-		return "## $name"
+		return "## $name\n\n"
 	}
 	
 	proc fmt_tkoption_def {name dbname dbclass} {
@@ -336,16 +328,6 @@ proc mddt_setup_2 {} {
 	#
 	# Text markup commands
 	#
-	
-	# plain text with no markup
-	proc fmt_plain_text {text} {
-		if {[ex_cis example]} {
-			return [regsub -line -all -- {^} $text "----"]
-		}
-		return $text
-	}
-	
-	# ... plus text structure commands ...
 	
 	# name of a command argument
 	proc fmt_arg {text} {

@@ -1,12 +1,33 @@
-[manpage_begin markdown.doctools 3 0.1]
+[manpage_begin markdown.doctools 3 1]
 [moddesc "Markdown module for Doctools."]
+[titledesc "Readme for Markdown module for Doctools."]
+[category "plugins"]
+[keywords "doctools" "doctools language" "doctools plugins"]
+[keywords "markup" "markdown" "formatting engine"]
+[copyright "2012 Jim DeVona"]
+[require "doctools"]
+[see_also "doctools_intro" "doctools_lang_intro"]
 [description]
 
 The Markdown version of this Readme ([file Readme.markdown]) is generated from the Doctools version ([file Readme.doctools]) using the [file markdown.doctools.tcl] Doctools module. The Doctools [option -format] option accepts module filenames as well as built-in format types; configure with something like this:
 
-[example {
-package require doctools
-::doctools::new doc -format markdown.doctools.tcl
-}]
+[example {package require doctools
+::doctools::new doc -format markdown.doctools.tcl}]
+
+Here's an untitled link: [uri https://github.com/anoved/markdown.doctools]
+
+[para]
+Here's a titled link to the [uri https://github.com/anoved/markdown.doctools "markdown.doctools repository"].
+
+[section "Paragraphs"]
+
+[comment "In generally, newlines are trouble. Desire a way to uniformly suppress or collapse them in output. Actually, paragraph breaks should only persist where explicitly set by para commands. Otherwise, this should all be collapsed."]
+
+This sentence starts a paragraph.
+
+This sentence should be part of the same paragraph, since there's no explicit para tag or other structural element between them.
+
+[para]
+This sentence, however, should indeed be part of a separate paragraph.
 
 [manpage_end]
