@@ -187,7 +187,7 @@ proc mddt_setup_2 {} {
 				set text [regsub "^\n+" $text {}]
 				# then remove all trailing newlines
 				set text [regsub "\n+$" $text {}]
-				# indent content of example block
+				# indent verbatim content of example block
 				set text [regsub -line -all -- {^} $text "\t"]
 			}
 			default {
@@ -226,6 +226,9 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_enum {} {
 		# enumerated ol list element
+		set counter [ex_cget enum]
+		ex_cset enum [incr counter]
+		return "\n${counter}. "
 	}
 	
 	# contrary to documentation, no fmt_example is supported. Instances of
@@ -261,45 +264,39 @@ proc mddt_setup_2 {} {
 			arguments {
 				# arg_def (dl)
 				ex_cpush list
-				ex_cset type arguments
 			}
 			cmd -
 			cmds -
 			commands {
 				# cmd_def (dl)
 				ex_cpush list
-				ex_cset type commands
 			}
 			definitions {
 				# def or call (dl)
 				ex_cpush list
-				ex_cset type definitions
 			}
 			enum -
 			enumerated {
 				# enum (ol)
 				ex_cpush list
-				ex_cset type enumerated
+				ex_cset enum 0
 			}
 			bullet -
 			item -
 			itemized {
 				# item (ul)
 				ex_cpush list
-				ex_cset type enumerated
 			}
 			opt -
 			opts -
 			options {
 				# opt_def (dl)
 				ex_cpush list
-				ex_cset type options
 			}
 			tkoption -
 			tkoptions {
 				# tkoption_def (dl)
 				ex_cpush list
-				ex_cset type tkoptions
 			}
 			default {
 				error "unknown list type $type"
