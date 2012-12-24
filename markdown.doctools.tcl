@@ -177,6 +177,11 @@ proc mddt_setup_2 {} {
 	proc fmt_see_also {args} {}
 	proc fmt_titledesc {text} {}
 	
+	# strip newlines
+	proc mddt_collapse_newlines {text} {
+		return [regsub -all -- "\n" $text {}]
+	}
+	
 	# plain text (context dependent)
 	proc fmt_plain_text {text} {
 		switch -- [ex_cname] {
@@ -193,11 +198,17 @@ proc mddt_setup_2 {} {
 				if {[regexp -- {^\s*$} $text]} {
 					return {}
 				}
+				
 				set text [regsub -- "^\n*" $text {}]
 				set text [regsub -- "\n+$" $text {}]
+				
+				set text [mddt_collapse_newlines $text]
+				
 				set text [regsub -all -line -- "^" $text "> "]
 			}
-			default {}
+			default {
+				set text [mddt_collapse_newlines $text]
+			}
 		}
 		return $text
 	}
@@ -326,6 +337,15 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_para {} {
 		# paragraph - empty line
+		# the reason I'm reluctant to add context rules here as well as in
+		# plain_text is that it seems there are many places where they must
+		# then be enforced - anywhere that newlines may be added to seperate
+		# blocks. Perhaps the solution is a standalone proc that all of these
+		# cases can call to provide "context-sensitive block seperators"
+		# (eg, newlines with proper prefixes/indentation)
+		if {[ex_cis dl]} {
+			return "\n> \n"
+		}
 		return "\n\n"
 	}
 	
