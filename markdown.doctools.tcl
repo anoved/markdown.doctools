@@ -26,9 +26,8 @@ proc fmt_setup {pass} {
 }
 
 proc fmt_postprocess {text} {
-	# collapse multiple blank lines to one (a cheat for sloppiness elsewhere!)
-	return [regsub -all "\n{2,}" $text "\n\n"]
-	#return $text
+	#return [regsub -all "\n{2,}" $text "\n\n"]
+	return $text
 }
 
 proc fmt_shutdown {} {
@@ -180,38 +179,17 @@ proc mddt_setup_2 {} {
 	
 	# plain text (context dependent)
 	proc fmt_plain_text {text} {
-		
-		switch [ex_cname] {
+		switch -- [ex_cname] {
 			example {
-				# first remove all leading newlines
-				set text [regsub "^\n+" $text {}]
-				# then remove all trailing newlines
-				set text [regsub "\n+$" $text {}]
-				# indent verbatim content of example block
-				set text [regsub -line -all -- {^} $text "\t"]
+				# ensure that the example begins on a single newline
+				set text [regsub -- "^\n*" $text "\n"]
+				# ensure that the example ends with no trailing newlines
+				set text [regsub -- "\n+$" $text {}]
+				# indent every line of the example
+				set text [regsub -all -- "\n+" $text "\n\t"]
 			}
-			dl {
-				
-				set text [regsub -all -- "\n+" $text {}]
-				
-				# don't prefix the content if there is no line content
-				if {$text != {}} {
-					set text [regsub -line -all -- "^" $text "> "]
-				}
-				
-				# gaps in the bq appear from para (and other structural \n\n)
-				# the whole list element body, paragraph breaks and all, should
-				# be uniformly blockquoted. one way to do it might be with a
-				# sub-context, started by each list element marker; on pop,
-				# return the content with any prefixes (bq OR indentation, for
-				# nesting) applied
-			}
-			default {
-				# collapse all newlines except for explicit structural breaks
-				set text [regsub -all -- "\n+" $text {}]
-			}
+			default {}
 		}
-				
 		return $text
 	}
 
@@ -253,10 +231,13 @@ proc mddt_setup_2 {} {
 	
 	# contrary to documentation, no fmt_example is supported. Instances of
 	# [example] are internally wrapped as [example_begin][example_end] blocks.
-	#proc fmt_example {text} {
-	#	# attempt to prefix lines of example text
-	#	return [regsub -all -line -- {^} $text "----"]
-	#}
+	#proc fmt_example {text} {}
+	# so here's what evidently happens when fmt_example is invoked:
+	#return [example_begin][plain_text ${code}][example_end]
+	# which is basically the same sequence that occurs with
+	# fmt_example_begin and fmt_example_end.
+	# EXCEPT, cpop in example_end returns the whole example content
+	# for example_begin/end, but not example.
 	
 	proc fmt_example_begin {} {
 		ex_cpush example
@@ -264,7 +245,8 @@ proc mddt_setup_2 {} {
 	}
 	
 	proc fmt_example_end {} {
-		return "[ex_cpop example]\n\n"
+		set text [ex_cpop example]
+		return "${text}\n\n"
 	}
 	
 	proc fmt_item {} {
@@ -332,7 +314,7 @@ proc mddt_setup_2 {} {
 	proc fmt_manpage_begin {command section version} {
 		global docinfo
 		# output header
-		return [fmt_section "$command - [dict get $docinfo titledesc]"]
+		return [fmt_section "$command"]
 	}
 	
 	proc fmt_manpage_end {} {
