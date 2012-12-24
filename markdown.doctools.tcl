@@ -26,8 +26,8 @@ proc fmt_setup {pass} {
 }
 
 proc fmt_postprocess {text} {
-	#return [regsub -all "\n{2,}" $text "\n\n"]
-	return $text
+	return [regsub -all "\n{2,}" $text "\n\n"]
+	#return $text
 }
 
 proc fmt_shutdown {} {
@@ -186,7 +186,7 @@ proc mddt_setup_2 {} {
 				# ensure that the example ends with no trailing newlines
 				set text [regsub -- "\n+$" $text {}]
 				# indent every line of the example
-				set text [regsub -all -- "\n+" $text "\n\t"]
+				set text [regsub -all -- "\n" $text "\n\t"]
 			}
 			default {}
 		}
