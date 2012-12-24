@@ -195,7 +195,7 @@ proc mddt_setup_2 {} {
 				}
 				set text [regsub -- "^\n*" $text {}]
 				set text [regsub -- "\n+$" $text {}]
-				set text [regsub -all -- "^" $text "> "]
+				set text [regsub -all -line -- "^" $text "> "]
 			}
 			default {}
 		}
