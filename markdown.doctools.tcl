@@ -26,6 +26,10 @@ proc fmt_setup {pass} {
 }
 
 proc fmt_postprocess {text} {
+	# for the purpose of condensing excess paragraph breaks, it's important
+	# to look *only* for repeated newlines such as we produce to make p breaks,
+	# and not any "blank" lines with other whitespace (eg indentation), which
+	# may be significant in the context of that content (eg an example) 
 	return [regsub -all "\n{2,}" $text "\n\n"]
 	#return $text
 }
@@ -187,11 +191,11 @@ proc mddt_setup_2 {} {
 		switch -- [ex_cname] {
 			example {
 				# ensure that the example begins on a single newline
-				set text [regsub -- "^\n*" $text "\n"]
+				set text [regsub -- "^\n*" $text {}]
 				# ensure that the example ends with no trailing newlines
 				set text [regsub -- "\n+$" $text {}]
 				# indent every line of the example
-				set text [regsub -all -- "\n" $text "\n\t"]
+				set text [regsub -all -line -- "^" $text "\t"]
 			}
 			dl {
 				# skip blank lines
