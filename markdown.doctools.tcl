@@ -188,6 +188,15 @@ proc mddt_setup_2 {} {
 				# indent every line of the example
 				set text [regsub -all -- "\n" $text "\n\t"]
 			}
+			dl {
+				# skip blank lines
+				if {[regexp -- {^\s*$} $text]} {
+					return {}
+				}
+				set text [regsub -- "^\n*" $text {}]
+				set text [regsub -- "\n+$" $text {}]
+				set text [regsub -all -- "^" $text "> "]
+			}
 			default {}
 		}
 		return $text
@@ -228,16 +237,6 @@ proc mddt_setup_2 {} {
 		ex_cset enum [incr counter]
 		return "\n${counter}. "
 	}
-	
-	# contrary to documentation, no fmt_example is supported. Instances of
-	# [example] are internally wrapped as [example_begin][example_end] blocks.
-	#proc fmt_example {text} {}
-	# so here's what evidently happens when fmt_example is invoked:
-	#return [example_begin][plain_text ${code}][example_end]
-	# which is basically the same sequence that occurs with
-	# fmt_example_begin and fmt_example_end.
-	# EXCEPT, cpop in example_end returns the whole example content
-	# for example_begin/end, but not example.
 	
 	proc fmt_example_begin {} {
 		ex_cpush example
@@ -302,13 +301,12 @@ proc mddt_setup_2 {} {
 				error "unknown list type $type"
 			}
 		}
-		
-		return "\n"
 	}
 	
 	proc fmt_list_end {} {
 		# close current list
-		return "[ex_cpop [ex_cname]]\n\n"
+		set text [ex_cpop [ex_cname]]
+		return "${text}\n\n"
 	}
 	
 	proc fmt_manpage_begin {command section version} {
