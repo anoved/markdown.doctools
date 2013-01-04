@@ -190,12 +190,17 @@ proc mddt_setup_2 {} {
 	proc fmt_plain_text {text} {
 		switch -- [ex_cname] {
 			example {
-				# ensure that the example begins on a single newline
-				set text [regsub -- "^\n*" $text {}]
-				# ensure that the example ends with no trailing newlines
-				set text [regsub -- "\n+$" $text {}]
-				# indent every line of the example
-				set text [regsub -all -line -- "^" $text "\t"]
+				
+				if {[ex_cget exlevel] eq [info level]} {
+					# this is an [example] block, not an [example_begin] block				
+					# ensure that the example begins with no leading newlines
+					set text [regsub -- "^\n*" $text {}]
+					# ensure that the example ends with no trailing newlines
+					set text [regsub -- "\n+$" $text {}]
+					# indent every line of the example
+					set text [regsub -all -line -- "^" $text "\t"]
+					set text "${text} ([ex_cget exlevel]-[info level])"
+				}
 			}
 			dl {
 				# skip blank lines
@@ -205,9 +210,7 @@ proc mddt_setup_2 {} {
 				
 				set text [regsub -- "^\n*" $text {}]
 				set text [regsub -- "\n+$" $text {}]
-				
-				set text [mddt_collapse_newlines $text]
-				
+				set text [mddt_collapse_newlines $text] 
 				set text [regsub -all -line -- "^" $text "> "]
 			}
 			default {
@@ -255,11 +258,25 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_example_begin {} {
 		ex_cpush example
+		ex_cset exlevel [info level]
 		return "\n\n"
 	}
 	
 	proc fmt_example_end {} {
 		set text [ex_cpop example]
+		# if {$text eq {}} then like this is an [example] (or an empty [example_begin]); otherwise, an [example_begin]
+		# I wish that fmt_example wasn't handled interno-automatically; it would be simpler
+		# if example formatting wasn't spread across here and plaintext.
+		
+		# to handle format-indent problem, indent $text here all at once on pop
+		# for example_begin blocks, and let plain_text handle indenting [example]
+		# blocks. the rub is: how can plain_text know when it is being applied
+		# by the [internally-defined] fmt_example for [example] blocks, vs.
+		# when it is being used to accumulate content for [example_begin] (and should not do any indenting).
+		
+		# when invoked in [example]] mode,
+		# fmt-example-begin and fmt-plain-text should have the same [info level];
+		# it may be that the levels are different for [example_begin] mode.
 		return "${text}\n\n"
 	}
 	
@@ -355,12 +372,12 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_section {name {id {}}} {
 		# h1
-		return "# $name\n\n"
+		return "\n\n# $name\n\n"
 	}
 	
 	proc fmt_subsection {name {id {}}} {
 		# h2
-		return "## $name\n\n"
+		return "\n\n## $name\n\n"
 	}
 	
 	proc fmt_tkoption_def {name dbname dbclass} {

@@ -1,0 +1,101 @@
+<html><head><link rel=stylesheet href=test.css /></head><body>
+<h1>markdown.doctools</h1>
+
+<h1>DESCRIPTION</h1>
+
+<p>precedograph</p>
+
+<p>listbegin definition list:</p>
+
+<p><em>one</em></p>
+
+<blockquote>
+  <p>alpha</p>
+
+<p>alpha two</p>
+</blockquote>
+
+<p><em>two for 2</em></p>
+
+<blockquote>
+  <p>beta</p>
+</blockquote>
+
+<p>three</p>
+
+<blockquote>
+  <p>gamma</p>
+</blockquote>
+
+<p>four</p>
+
+<blockquote>
+  <p>delta</p>
+</blockquote>
+
+<h1>Definition List Example Code</h1>
+
+<p>Doctools code for a simple definition list:</p>
+
+<pre><code>[list_begin definitions]
+[def foo]
+The first word used as a generic sample value.
+[example {
+for {set i 0} {i &lt; 10} {incr i} {
+    puts [expr {$i * 12}]
+}
+}]
+[def bar]
+The second word used for the same purpose.
+[para]
+Second paragraph of definition for second word.
+[list_end] (1-1)
+</code></pre>
+
+<p>Rendered as:</p>
+
+<p>foo</p>
+
+<blockquote>
+  <p>The first word used as a generic sample value.</p>
+</blockquote>
+
+<pre><code>for {set i 0} {i &lt; 10} {incr i} {
+    puts [expr {$i * 12}]
+} (1-1)
+</code></pre>
+
+<p>bar</p>
+
+<blockquote>
+  <p>The second word used for the same purpose.</p>
+
+<p>Second paragraph of definition for second word.</p>
+</blockquote>
+
+<p>The example embedded in the list is not correctly indented yet.</p>
+
+<h1>Example Blocks</h1>
+
+<p>example (contents are not processed for markup):</p>
+
+<pre><code># comment example
+foreach {foo bar} $list {
+    if {$foo} {
+        puts $bar
+    }
+} (1-1)
+</code></pre>
+
+<p>examplebegin and exampleend (contents <strong>are</strong> processed for markup; however, it seems that since markup tags split the example into multiple plaintext sections, the text immediately after a tag gets indented as if it is a newline. fmtplaintext therefore needs to know how to differentiate input that actually begins the line from input that starts in the middle of a line.)</p>
+
+<pre><code>#  (1-1)*comment*    example
+foreach {foo bar} $list {
+    if {$foo} {
+        puts $bar
+    }
+} (1-1)
+</code></pre>
+
+<p>Finis.</p>
+</body></html>
