@@ -10,3 +10,6 @@ Readme.html: Readme.markdown
 	echo "<html><head><link rel="stylesheet" href="test.css" /></head><body>" >Readme.html
 	/usr/bin/markdown Readme.markdown >>Readme.html
 	echo "</body></html>" >>Readme.html
+
+test:
+	/usr/bin/tclsh tests/all.tcl
