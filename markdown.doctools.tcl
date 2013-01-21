@@ -199,7 +199,7 @@ proc mddt_setup_2 {} {
 					set text [regsub -- "\n+$" $text {}]
 					# indent every line of the example
 					set text [regsub -all -line -- "^" $text "\t"]
-					set text "${text} ([ex_cget exlevel]-[info level])"
+					set text "${text}"
 				}
 			}
 			dl {
