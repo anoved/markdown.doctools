@@ -7,7 +7,7 @@ package require tcltest 2
 		-testdir [::tcltest::workingDirectory] \
 		-file {*.test.tcl} \
 		-notfile {l.*.test.tcl} \
-		-verbose {body pass skip error}
+		-verbose {skip error}
 
 eval ::tcltest::configure $argv
 
