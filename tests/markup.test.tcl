@@ -50,6 +50,12 @@ mtest "tkoptions list" \
 		{[list_begin tkoptions][tkoption_def foo fooname fooclass]one[tkoption_def bar barname barclass]two[list_end]} \
 		"foo fooname fooclass\n\n> one\n\nbar barname barclass\n\n> two\n\n"
 
+# sections
+mtest "section" {[section Foo]} "# Foo\n\n"
+mtest "subsection" {[subsection Foo]} "## Foo\n\n"
+mtest "sections and text" {lorem[section Foo]ipsum} "lorem\n\n# Foo\n\nipsum"
+mtest "sections and subsections" {[section Foo][subsection Bar]} "# Foo\n\n## Bar\n\n"
+
 # markup
 mtest "arg - em"         {[arg foo]}       {*foo*}
 mtest "class - code"     {[class foo]}     {`foo`}
