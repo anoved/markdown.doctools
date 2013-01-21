@@ -24,7 +24,7 @@ proc mtest {description dtinput mdoutput} {
 			-result [mdh $mdoutput]
 }
 
-# structure
+# basic lists
 mtest "enumerated list" \
 		{[list_begin enum][enum]one[enum]two[enum]three[list_end]} \
 		"1. one\n2. two\n3. three\n\n"
@@ -34,6 +34,18 @@ mtest "itemized list" \
 mtest "definition list" \
 		{[list_begin definitions][def foo]one[def bar]two[def soom]three[list_end]} \
 		"foo\n\n> one\n\nbar\n\n> two\n\nsoom\n\n> three\n\n"
+mtest "arguments list" \
+		{[list_begin arguments][arg_def int foo]one[arg_def double bar]two[arg_def string soom]three[list_end]} \
+		"int foo\n\n> one\n\ndouble bar\n\n> two\n\nstring soom\n\n> three\n\n"
+mtest "commands list" \
+		{[list_begin commands][cmd_def foo]one[cmd_def bar]two[cmd_def soom]three[list_end]} \
+		"foo\n\n> one\n\nbar\n\n> two\n\nsoom\n\n> three\n\n"
+mtest "options list" \
+		{[list_begin options][opt_def foo]one[opt_def bar]two[opt_def soom alpha]three[list_end]} \
+		"foo\n\n> one\n\nbar\n\n> two\n\nsoom alpha\n\n> three\n\n"
+mtest "tkoptions list" \
+		{[list_begin tkoptions][tkoption_def foo fooname fooclass]one[tkoption_def bar barname barclass]two[list_end]} \
+		"foo fooname fooclass\n\n> one\n\nbar barname barclass\n\n> two\n\n"
 
 # markup
 mtest "arg - em"         {[arg foo]}       {*foo*}
