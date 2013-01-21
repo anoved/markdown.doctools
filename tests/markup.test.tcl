@@ -34,6 +34,9 @@ mtest "itemized list" \
 mtest "definition list" \
 		{[list_begin definitions][def foo]one[def bar]two[def soom]three[list_end]} \
 		"foo\n\n> one\n\nbar\n\n> two\n\nsoom\n\n> three\n\n"
+mtest "definition list with call" \
+		{[list_begin definitions][call foo]one[call bar a]two[call soom 1 2 3]three[list_end]} \
+		"foo\n\n> one\n\nbar a\n\n> two\n\nsoom 1 2 3\n\n> three\n\n"
 mtest "arguments list" \
 		{[list_begin arguments][arg_def int foo]one[arg_def double bar]two[arg_def string soom]three[list_end]} \
 		"int foo\n\n> one\n\ndouble bar\n\n> two\n\nstring soom\n\n> three\n\n"
