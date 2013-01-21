@@ -62,13 +62,8 @@ mtest "example" {[example {# comment and blank line
 if {[command $variable]} {
 	puts {**Hello, world!**}
 }}]} "\t# comment and blank line\n\t\n\tif {\[command \$variable\]} {\n\t\tputs {**Hello, world!**}\n\t}\n\n"
-
-# Use lb and rb for left and right square brackets in example blocks.
-# (Required because other formatting commands are allowed in example blocks.)
-# Currently, the content of rb and lb looks like it is getting "indented" too.
-# OK, what's actually happening is that each command (like [lb]) starts a new
-# span of plain_text, which gets indented, because plain_text assumes its input
-# starts at the start of a line, which is not necessarily the case.
+# Use lb and rb for left and right brackets ([ and ]) in example blocks.
+# Markup commands (such as [emph]) are applied in example blocks.
 mtest "example block" {[example_begin]# comment and blank line
 
 if {[lb]command $variable[rb]} {

@@ -190,8 +190,8 @@ proc mddt_setup_2 {} {
 	proc fmt_plain_text {text} {
 		switch -- [ex_cname] {
 			example {
-				# force example content to the example context output buffer
-				# and output nothing now; unifies example command and blocks.
+				# Append example content to the example context output buffer;
+				# output nothing now. Unifies [example] command and begin/end.
 				ex_cappend $text
 				set text {}
 			}
@@ -261,7 +261,7 @@ proc mddt_setup_2 {} {
 	proc fmt_example_end {} {
 		set text [ex_cpop example]
 		
-		# trim leading/trailing newlines and indent content (of blocks)
+		# trim leading/trailing newlines and indent content
 		set text [regsub -- "^\n*" $text {}]
 		set text [regsub -- "\n+$" $text {}]
 		set text [regsub -all -line -- "^" $text "\t"]
