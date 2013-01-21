@@ -231,7 +231,11 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_call {cmd args} {
 		# general dl list element
-		return "\n\n${cmd}\n\n"
+		set arguments {}
+		foreach arg $args {
+			append arguments [format { %s} $arg]
+		}
+		return "\n\n${cmd}${arguments}\n\n"
 	}
 	
 	proc fmt_cmd_def {command} {
@@ -333,6 +337,7 @@ proc mddt_setup_2 {} {
 				error "unknown list type $type"
 			}
 		}
+		return
 	}
 	
 	proc fmt_list_end {} {
@@ -353,7 +358,11 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_opt_def {name {arg {}}} {
 		# options dl list element
-		return "\n\n${name}\n\n"
+		set argument {}
+		if {$arg ne {}} {
+			set argument [format { %s} $arg]
+		}
+		return "\n\n${name}${argument}\n\n"
 	}
 	
 	proc fmt_para {} {
@@ -382,7 +391,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_tkoption_def {name dbname dbclass} {
 		# tkoptions dl list element
-		return "\n\n${name}\n\n"
+		return "\n\n${name} ${dbname} ${dbclass}\n\n"
 	}
 	
 	#
