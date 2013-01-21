@@ -18,12 +18,24 @@ proc mdh {content} {
 proc mtest {description dtinput mdoutput} {
 	global testnum
 	test markup-[incr testnum] $description \
-			-setup {::doctools::new doc -format ../markdown.doctools.tcl}
-			-body {doc format [dth $dtinput]}
-			-cleanup {doc destroy}
+			-setup {::doctools::new doc -format ../markdown.doctools.tcl} \
+			-body {doc format [dth $dtinput]} \
+			-cleanup {doc destroy} \
 			-result [mdh $mdoutput]
 }
 
+# structure
+mtest "enumerated list" \
+		{[list_begin enum][enum]one[enum]two[enum]three[list_end]} \
+		"1. one\n2. two\n3. three\n\n"
+mtest "itemized list" \
+		{[list_begin item][item]one[item]two[item]three[list_end]} \
+		"- one\n- two\n- three\n\n"
+mtest "definition list" \
+		{[list_begin definitions][def foo]one[def bar]two[def soom]three[list_end]} \
+		"foo\n\n> one\n\nbar\n\n> two\n\nsoom\n\n> three\n\n"
+
+# markup
 mtest "arg - em"         {[arg foo]}       {*foo*}
 mtest "class - code"     {[class foo]}     {`foo`}
 mtest "cmd - code"       {[cmd foo]}       {`foo`}
@@ -51,3 +63,6 @@ mtest "widget - code"    {[widget foo]}    {`foo`}
 
 # deprecated markup
 mtest "strong (emph) - strong" {[strong foo]} {**foo**}
+
+
+::tcltest::cleanupTests
