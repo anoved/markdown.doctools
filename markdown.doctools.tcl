@@ -276,8 +276,7 @@ proc mddt_setup_2 {} {
 	
 	# hint is undocumented
 	proc fmt_list_begin {type {hint {}}} {
-		# start a list. Set some kind of mode flag indicating we're in a list
-		# (relative to current context, I suppose, to support nested lists.)
+
 		switch $type {
 			arg -
 			args -
@@ -328,7 +327,19 @@ proc mddt_setup_2 {} {
 	proc fmt_list_end {} {
 		# close current list
 		set text [ex_cpop [ex_cname]]
-		return "${text}\n\n"
+		
+		# one generic "list" context may be sufficient (and certainly simpler)
+		# than separate ul, ol, and dl list categories.
+		set parentContext [ex_cname]
+		if {$parentContext eq "ul" || $parentContext eq "ol" || $parentContext eq "dl"} {
+			set text [regsub -- "^\n*" $text {}]
+			set text [regsub -all -line -- "^" $text "\t"]
+			set text "\n${text}"
+		} else {
+			set text "${text}\n\n"
+		}
+		
+		return $text
 	}
 	
 	proc fmt_manpage_begin {command section version} {
