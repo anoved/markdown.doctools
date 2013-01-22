@@ -28,4 +28,20 @@ mtest "nested itemized list" \
 		{[list_begin itemized][item]one[item]two[list_begin itemized][item]alpha[item]beta[list_end][item]three[list_end]} \
 		"- one\n- two\n\t- alpha\n\t- beta\n- three\n\n"
 
+mtest "nested enumerated list" \
+		{[list_begin enumerated][enum]one[enum]two[list_begin enumerated][enum]alpha[enum]beta[list_end][enum]three[list_end]} \
+		"1. one\n2. two\n\t1. alpha\n\t2. beta\n3. three\n\n"
+
+mtest "enumerated list nested in itemized list" \
+		{[list_begin itemized][item]one[item]two[list_begin enumerated][enum]alpha[enum]beta[list_end][item]three[list_end]} \
+		"- one\n- two\n\t1. alpha\n\t2. beta\n- three\n\n"
+
+mtest "itemized list nested in enumerated list" \
+		{[list_begin enumerated][enum]one[enum]two[list_begin itemized][item]alpha[item]beta[list_end][enum]three[list_end]} \
+		"1. one\n2. two\n\t- alpha\n\t- beta\n3. three\n\n"
+
+mtest "three levels of nesting" \
+		{[list_begin enumerated][enum]outer[list_begin itemized][item]middle[list_begin enumerated][enum]inner[list_end][list_end][list_end]} \
+		"1. outer\n\t- middle\n\t\t1. inner\n\n"
+
 ::tcltest::cleanupTests
