@@ -341,8 +341,6 @@ proc mddt_setup_2 {} {
 			}
 			"dl" {
 				set text [regsub -- "^\n*" $text "\n"]
-				#set text [regsub -- "\n+$" $text {}]
-				#set text [mddt_collapse_newlines $text] 
 				set text [regsub -all -line -- "^" $text "> "]
 				set text "\n${text}"
 			}
