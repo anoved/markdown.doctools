@@ -345,9 +345,40 @@ proc mddt_setup_2 {} {
 		return "\n\n${command}\n\n"
 	}
 	
+	# # # #
+	# WIP #
+	# # # #
 	proc fmt_def {text} {
 		# general dl list element
-		return "\n\n${text}\n\n"
+		
+		# this should also occur in the dl case of list_end
+		# (factor it into an mddt_ proc called from here and there.)
+		if {[ex_cis dlelement]} {
+			
+			# close preceding element, if any
+			set content [ex_cpop dlelement]
+			
+			# indent dl content all in one place right here,
+			# rather than distributed over plain_text and list_end.
+			# [regsub ...]
+			
+			# push the indented content to the output buffer
+			# of the parent list (now the current context)
+			ex_cappend $content
+		}
+		
+		# push the dl term to the list buffer...
+		ex_cappend "\n\n${text}\n\n"
+		
+		# ...and start a new context buffer for the dl definition
+		ex_cpush dlelement
+		
+		# return nothing for the definition buffer yet.
+		# (plain_text should push content to this buffer as well,
+		# although I believe it will happen automatically, unlike
+		# the weird situation with the example command and block.)
+		return
+		#return "\n\n${text}\n\n"
 	}
 	
 	proc fmt_opt_def {name {arg {}}} {
