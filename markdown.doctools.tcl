@@ -113,9 +113,8 @@ proc mddt_setup_1 {} {
 	# Text structure and markup commands ignored during first pass.
 	#
 	
-	proc fmt_plain_text {text} {}
-	
 	# text structure
+	proc fmt_plain_text {text} {}	
 	proc fmt_arg_def {type name {mode {}}} {}
 	proc fmt_call {cmd args} {} ; # scan for synopsis
 	proc fmt_cmd_def {command} {}
@@ -186,6 +185,20 @@ proc mddt_setup_2 {} {
 		return [regsub -all -- "\n" $text {}]
 	}
 	
+	#
+	# Text structure commands
+	#
+
+	proc fmt_manpage_begin {command section version} {
+		global docinfo
+		# output header
+		return [fmt_section "$command"]
+	}
+	
+	proc fmt_manpage_end {} {
+		# output footer
+	}
+
 	# plain text (context dependent)
 	proc fmt_plain_text {text} {
 		switch -- [ex_cname] {
@@ -213,69 +226,26 @@ proc mddt_setup_2 {} {
 		}
 		return $text
 	}
-
-	#
-	# Text structure commands
-	#
 	
-	proc fmt_arg_def {type name {mode {}}} {
-		# arguments dl list element
-		return "\n\n${type} ${name}\n\n"
-	}
-	
-	proc fmt_call {cmd args} {
-		# general dl list element
-		set arguments {}
-		foreach arg $args {
-			append arguments [format { %s} $arg]
+	proc fmt_para {} {
+		# paragraph - empty line
+		# the reason I'm reluctant to add context rules here as well as in
+		# plain_text is that it seems there are many places where they must
+		# then be enforced - anywhere that newlines may be added to seperate
+		# blocks. Perhaps the solution is a standalone proc that all of these
+		# cases can call to provide "context-sensitive block seperators"
+		# (eg, newlines with proper prefixes/indentation)
+		if {[ex_cis dl]} {
+			return "\n> \n"
 		}
-		return "\n\n${cmd}${arguments}\n\n"
-	}
-	
-	proc fmt_cmd_def {command} {
-		# commands dl list element
-		return "\n\n${command}\n\n"
-	}
-	
-	proc fmt_def {text} {
-		# general dl list element
-		return "\n\n${text}\n\n"
-	}
-	
-	proc fmt_description {id} {
-		# "Implicitly starts a section named "DESCRIPTION""
-		return [fmt_section DESCRIPTION]
-	}
-	
-	proc fmt_enum {} {
-		# enumerated ol list element
-		set counter [ex_cget enum]
-		ex_cset enum [incr counter]
-		return "\n${counter}. "
-	}
-	
-	proc fmt_example_begin {} {
-		ex_cpush example
 		return "\n\n"
 	}
 	
-	proc fmt_example_end {} {
-		set text [ex_cpop example]
-		
-		# trim leading/trailing newlines and indent content
-		set text [regsub -- "^\n*" $text {}]
-		set text [regsub -- "\n+$" $text {}]
-		set text [regsub -all -line -- "^" $text "\t"]
-		
-		return "${text}\n\n"
-	}
+	#
+	# Lists
+	#
 	
-	proc fmt_item {} {
-		# itemized ul list element
-		return "\n- "
-	}
-	
-	# hint is undocumented
+	# the hint argument is undocumented
 	proc fmt_list_begin {type {hint {}}} {
 
 		switch $type {
@@ -352,14 +322,32 @@ proc mddt_setup_2 {} {
 		return $text
 	}
 	
-	proc fmt_manpage_begin {command section version} {
-		global docinfo
-		# output header
-		return [fmt_section "$command"]
+	#
+	# Definition list elements
+	#
+	
+	proc fmt_arg_def {type name {mode {}}} {
+		# arguments dl list element
+		return "\n\n${type} ${name}\n\n"
 	}
 	
-	proc fmt_manpage_end {} {
-		# output footer
+	proc fmt_call {cmd args} {
+		# general dl list element
+		set arguments {}
+		foreach arg $args {
+			append arguments [format { %s} $arg]
+		}
+		return "\n\n${cmd}${arguments}\n\n"
+	}
+	
+	proc fmt_cmd_def {command} {
+		# commands dl list element
+		return "\n\n${command}\n\n"
+	}
+	
+	proc fmt_def {text} {
+		# general dl list element
+		return "\n\n${text}\n\n"
 	}
 	
 	proc fmt_opt_def {name {arg {}}} {
@@ -370,19 +358,60 @@ proc mddt_setup_2 {} {
 		}
 		return "\n\n${name}${argument}\n\n"
 	}
+
+	proc fmt_tkoption_def {name dbname dbclass} {
+		# tkoptions dl list element
+		return "\n\n${name} ${dbname} ${dbclass}\n\n"
+	}
 	
-	proc fmt_para {} {
-		# paragraph - empty line
-		# the reason I'm reluctant to add context rules here as well as in
-		# plain_text is that it seems there are many places where they must
-		# then be enforced - anywhere that newlines may be added to seperate
-		# blocks. Perhaps the solution is a standalone proc that all of these
-		# cases can call to provide "context-sensitive block seperators"
-		# (eg, newlines with proper prefixes/indentation)
-		if {[ex_cis dl]} {
-			return "\n> \n"
-		}
+	#
+	# Enumerated list elements
+	#
+	
+	proc fmt_enum {} {
+		# enumerated ol list element
+		set counter [ex_cget enum]
+		ex_cset enum [incr counter]
+		return "\n${counter}. "
+	}
+	
+	#
+	# Itemized list elements
+	#
+	
+	proc fmt_item {} {
+		# itemized ul list element
+		return "\n- "
+	}
+	
+	#
+	# Examples
+	#
+	
+	proc fmt_example_begin {} {
+		ex_cpush example
 		return "\n\n"
+	}
+	
+	proc fmt_example_end {} {
+		set text [ex_cpop example]
+		
+		# trim leading/trailing newlines and indent content
+		set text [regsub -- "^\n*" $text {}]
+		set text [regsub -- "\n+$" $text {}]
+		set text [regsub -all -line -- "^" $text "\t"]
+		
+		return "${text}\n\n"
+	}
+		
+	#
+	# Sections
+	#
+	
+	proc fmt_description {id} {
+		# Start of page content; expected by doctools.
+		# "Implicitly starts a section named "DESCRIPTION""
+		return [fmt_section DESCRIPTION]
 	}
 	
 	proc fmt_section {name {id {}}} {
@@ -394,12 +423,7 @@ proc mddt_setup_2 {} {
 		# h2
 		return "\n\n## $name\n\n"
 	}
-	
-	proc fmt_tkoption_def {name dbname dbclass} {
-		# tkoptions dl list element
-		return "\n\n${name} ${dbname} ${dbclass}\n\n"
-	}
-	
+		
 	#
 	# Text markup commands
 	#
