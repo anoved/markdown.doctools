@@ -44,4 +44,8 @@ mtest "three levels of nesting" \
 		{[list_begin enumerated][enum]outer[list_begin itemized][item]middle[list_begin enumerated][enum]inner[list_end][list_end][list_end]} \
 		"1. outer\n\t- middle\n\t\t1. inner\n\n"
 
+mtest "nested definition list" \
+		{[list_begin definitions][def foo]one[def bar]two[list_begin definitions][def alpha]zeta[def beta]omega[list_end][def soom]three[list_end]} \
+		"foo\n\n> one\n\nbar\n\n> two\n> \n> alpha\n> \n> > zeta\n> \n> beta\n> \n> > omega\n\nsoom\n\n> three\n\n"
+
 ::tcltest::cleanupTests

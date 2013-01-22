@@ -196,10 +196,11 @@ proc mddt_setup_2 {} {
 				set text {}
 			}
 			dl {
+				
 				# skip blank lines
-				if {[regexp -- {^\s*$} $text]} {
-					return {}
-				}
+				#if {[regexp -- {^\s*$} $text]} {
+				#	return {}
+				#}
 				
 				set text [regsub -- "^\n*" $text {}]
 				set text [regsub -- "\n+$" $text {}]
@@ -326,17 +327,28 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_list_end {} {
 		# close current list
-		set text [ex_cpop [ex_cname]]
+		set type [ex_cname]
+		set text [ex_cpop $type]
 		
-		# one generic "list" context may be sufficient (and certainly simpler)
-		# than separate ul, ol, and dl list categories.
-		set parentContext [ex_cname]
-		if {$parentContext eq "ul" || $parentContext eq "ol" || $parentContext eq "dl"} {
-			set text [regsub -- "^\n*" $text {}]
-			set text [regsub -all -line -- "^" $text "\t"]
-			set text "\n${text}"
-		} else {
-			set text "${text}\n\n"
+		# format or indent according if nested in another list
+		# (this should be applied to example blocks as well)
+		switch [ex_cname] {
+			"ul" -
+			"ol" {
+				set text [regsub -- "^\n*" $text {}]
+				set text [regsub -all -line -- "^" $text "\t"]
+				set text "\n${text}"
+			}
+			"dl" {
+				set text [regsub -- "^\n*" $text "\n"]
+				#set text [regsub -- "\n+$" $text {}]
+				#set text [mddt_collapse_newlines $text] 
+				set text [regsub -all -line -- "^" $text "> "]
+				set text "\n${text}"
+			}
+			default {
+				set text "${text}\n\n"
+			}
 		}
 		
 		return $text
