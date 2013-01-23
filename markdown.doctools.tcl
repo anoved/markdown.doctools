@@ -215,10 +215,17 @@ proc mddt_setup_2 {} {
 				#	return {}
 				#}
 				
-				set text [regsub -- "^\n*" $text {}]
-				set text [regsub -- "\n+$" $text {}]
-				set text [mddt_collapse_newlines $text] 
-				set text [regsub -all -line -- "^" $text "> "]
+				#set text [regsub -- "^\n*" $text {}]
+				#set text [regsub -- "\n+$" $text {}]
+				#set text [mddt_collapse_newlines $text] 
+				#set text [regsub -all -line -- "^" $text "> "]
+				
+				# I believe dl content is pushed to the current buffer anyway
+				# (example requires explicit ex_cappend because example command
+				# is implemented by calling example_begin/_end directly.)
+				ex_cappend $text
+				set text {}
+				
 			}
 			default {
 				set text [mddt_collapse_newlines $text]
@@ -296,6 +303,10 @@ proc mddt_setup_2 {} {
 	}
 	
 	proc fmt_list_end {} {
+		
+		# close current [dl] list element [if any]
+		mddt_dlelement_end
+	
 		# close current list
 		set type [ex_cname]
 		set text [ex_cpop $type]
@@ -309,11 +320,7 @@ proc mddt_setup_2 {} {
 				set text [regsub -all -line -- "^" $text "\t"]
 				set text "\n${text}"
 			}
-			"dl" {
-				set text [regsub -- "^\n*" $text "\n"]
-				set text [regsub -all -line -- "^" $text "> "]
-				set text "\n${text}"
-			}
+			"dl" -
 			default {
 				set text "${text}\n\n"
 			}
@@ -351,34 +358,41 @@ proc mddt_setup_2 {} {
 	proc fmt_def {text} {
 		# general dl list element
 		
-		# this should also occur in the dl case of list_end
-		# (factor it into an mddt_ proc called from here and there.)
-		if {[ex_cis dlelement]} {
-			
-			# close preceding element, if any
-			set content [ex_cpop dlelement]
-			
-			# indent dl content all in one place right here,
-			# rather than distributed over plain_text and list_end.
-			# [regsub ...]
-			
-			# push the indented content to the output buffer
-			# of the parent list (now the current context)
-			ex_cappend $content
-		}
+		# close any open dl list element
+		mddt_dlelement_end
 		
 		# push the dl term to the list buffer...
 		ex_cappend "\n\n${text}\n\n"
 		
 		# ...and start a new context buffer for the dl definition
-		ex_cpush dlelement
+		mddt_dlelement_begin
 		
 		# return nothing for the definition buffer yet.
 		# (plain_text should push content to this buffer as well,
 		# although I believe it will happen automatically, unlike
 		# the weird situation with the example command and block.)
 		return
-		#return "\n\n${text}\n\n"
+	}
+	
+	proc mddt_dlelement_begin {} {
+		ex_cpush dlelement
+	}
+	
+	proc mddt_dlelement_end {} {
+		if {[ex_cis dlelement]} {
+			
+			# close preceding dlelement, if any
+			set content [ex_cpop dlelement]
+			
+			# strip leading/trailing newlines & blockquote
+			set content [regsub -- "^\n*" $content {}]
+			set content [regsub -- "\n+$" $content {}]
+			set content [regsub -all -line -- "^" $content "> "]
+			
+			# push the indented content to the output buffer
+			# of the parent list (now the current context)
+			ex_cappend $content
+		}
 	}
 	
 	proc fmt_opt_def {name {arg {}}} {
