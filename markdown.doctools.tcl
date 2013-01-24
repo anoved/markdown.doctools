@@ -209,23 +209,8 @@ proc mddt_setup_2 {} {
 				set text {}
 			}
 			dl {
-				
-				# skip blank lines
-				#if {[regexp -- {^\s*$} $text]} {
-				#	return {}
-				#}
-				
-				#set text [regsub -- "^\n*" $text {}]
-				#set text [regsub -- "\n+$" $text {}]
-				#set text [mddt_collapse_newlines $text] 
-				#set text [regsub -all -line -- "^" $text "> "]
-				
-				# I believe dl content is pushed to the current buffer anyway
-				# (example requires explicit ex_cappend because example command
-				# is implemented by calling example_begin/_end directly.)
 				ex_cappend $text
 				set text {}
-				
 			}
 			default {
 				set text [mddt_collapse_newlines $text]
@@ -335,7 +320,10 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_arg_def {type name {mode {}}} {
 		# arguments dl list element
-		return "\n\n${type} ${name}\n\n"
+		mddt_dlelement_end
+		ex_cappend "\n\n${type} ${name}\n\n"
+		mddt_dlelement_begin
+		return
 	}
 	
 	proc fmt_call {cmd args} {
@@ -344,19 +332,23 @@ proc mddt_setup_2 {} {
 		foreach arg $args {
 			append arguments [format { %s} $arg]
 		}
-		return "\n\n${cmd}${arguments}\n\n"
+		
+		mddt_dlelement_end
+		ex_cappend "\n\n${cmd}${arguments}\n\n"
+		mddt_dlelement_begin
+		return
 	}
 	
 	proc fmt_cmd_def {command} {
 		# commands dl list element
-		return "\n\n${command}\n\n"
+		mddt_dlelement_end
+		ex_cappend "\n\n${command}\n\n"
+		mddt_dlelement_begin
+		return
 	}
 	
-	# # # #
-	# WIP #
-	# # # #
 	proc fmt_def {text} {
-		# general dl list element
+		# generic dl list element
 		
 		# close any open dl list element
 		mddt_dlelement_end
@@ -367,10 +359,6 @@ proc mddt_setup_2 {} {
 		# ...and start a new context buffer for the dl definition
 		mddt_dlelement_begin
 		
-		# return nothing for the definition buffer yet.
-		# (plain_text should push content to this buffer as well,
-		# although I believe it will happen automatically, unlike
-		# the weird situation with the example command and block.)
 		return
 	}
 	
@@ -401,12 +389,19 @@ proc mddt_setup_2 {} {
 		if {$arg ne {}} {
 			set argument [format { %s} $arg]
 		}
-		return "\n\n${name}${argument}\n\n"
+		
+		mddt_dlelement_end
+		ex_cappend "\n\n${name}${argument}\n\n"
+		mddt_dlelement_begin
+		return
 	}
 
 	proc fmt_tkoption_def {name dbname dbclass} {
 		# tkoptions dl list element
-		return "\n\n${name} ${dbname} ${dbclass}\n\n"
+		mddt_dlelement_end
+		ex_cappend "\n\n${name} ${dbname} ${dbclass}\n\n"
+		mddt_dlelement_begin
+		return
 	}
 	
 	#

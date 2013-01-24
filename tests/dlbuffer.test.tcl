@@ -15,26 +15,22 @@ proc mdh {content} {
 	return [format "\n\n# test\n\n# DESCRIPTION\n\n%s" $content]
 }
 
-test dlbuffer-1.0 {dl list element buffer} \
-		-setup {::doctools::new doc -format ../markdown.doctools.tcl} \
-		-body {doc format {
-[manpage_begin test 1 1]
-[description]
-[list_begin definitions]
+proc mtest {description dtinput mdoutput} {
+	global testnum
+	test dlbuffer-[incr testnum] $description \
+			-setup {::doctools::new doc -format ../markdown.doctools.tcl} \
+			-body {doc format [dth $dtinput]} \
+			-cleanup {doc destroy} \
+			-result [mdh $mdoutput]
+}
+
+mtest "dl list element buffer" \
+{[list_begin definitions]
 [def foo]one
 [def bar]two
 [def soom]three
-[list_end]
-[manpage_end]
-}} \
-		-cleanup {doc destroy} \
-		-result {
-
-# test
-
-# DESCRIPTION
-
-foo
+[list_end]} \
+{foo
 
 > one
 
