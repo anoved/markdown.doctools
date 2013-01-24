@@ -321,8 +321,7 @@ proc mddt_setup_2 {} {
 	proc fmt_arg_def {type name {mode {}}} {
 		# arguments dl list element
 		mddt_dlelement_end
-		ex_cappend "\n\n${type} ${name}\n\n"
-		mddt_dlelement_begin
+		mddt_dlelement_begin "\n\n${type} ${name}\n\n"
 		return
 	}
 	
@@ -334,35 +333,45 @@ proc mddt_setup_2 {} {
 		}
 		
 		mddt_dlelement_end
-		ex_cappend "\n\n${cmd}${arguments}\n\n"
-		mddt_dlelement_begin
+		mddt_dlelement_begin "\n\n${cmd}${arguments}\n\n"
 		return
 	}
 	
 	proc fmt_cmd_def {command} {
 		# commands dl list element
 		mddt_dlelement_end
-		ex_cappend "\n\n${command}\n\n"
-		mddt_dlelement_begin
+		mddt_dlelement_begin "\n\n${command}\n\n"
 		return
 	}
 	
 	proc fmt_def {text} {
 		# generic dl list element
-		
-		# close any open dl list element
 		mddt_dlelement_end
-		
-		# push the dl term to the list buffer...
-		ex_cappend "\n\n${text}\n\n"
-		
-		# ...and start a new context buffer for the dl definition
-		mddt_dlelement_begin
-		
+		mddt_dlelement_begin "\n\n${text}\n\n"
 		return
 	}
 	
-	proc mddt_dlelement_begin {} {
+	proc fmt_opt_def {name {arg {}}} {
+		# options dl list element
+		set argument {}
+		if {$arg ne {}} {
+			set argument [format { %s} $arg]
+		}
+		
+		mddt_dlelement_end
+		mddt_dlelement_begin "\n\n${name}${argument}\n\n"
+		return
+	}
+
+	proc fmt_tkoption_def {name dbname dbclass} {
+		# tkoptions dl list element
+		mddt_dlelement_end
+		mddt_dlelement_begin "\n\n${name} ${dbname} ${dbclass}\n\n"
+		return
+	}
+	
+	proc mddt_dlelement_begin {term} {
+		ex_cappend $term
 		ex_cpush dlelement
 	}
 	
@@ -381,27 +390,6 @@ proc mddt_setup_2 {} {
 			# of the parent list (now the current context)
 			ex_cappend $content
 		}
-	}
-	
-	proc fmt_opt_def {name {arg {}}} {
-		# options dl list element
-		set argument {}
-		if {$arg ne {}} {
-			set argument [format { %s} $arg]
-		}
-		
-		mddt_dlelement_end
-		ex_cappend "\n\n${name}${argument}\n\n"
-		mddt_dlelement_begin
-		return
-	}
-
-	proc fmt_tkoption_def {name dbname dbclass} {
-		# tkoptions dl list element
-		mddt_dlelement_end
-		ex_cappend "\n\n${name} ${dbname} ${dbclass}\n\n"
-		mddt_dlelement_begin
-		return
 	}
 	
 	#
