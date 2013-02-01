@@ -185,6 +185,15 @@ proc mddt_setup_2 {} {
 		return [regsub -all -- "\n" $text {}]
 	}
 	
+	# trim leading and surplus trailing newlines from content, and insert the
+	# prefix at the beginnin gof every line 
+	proc mddt_trimblock {content {prefix {}}} {
+		set content [regsub -- "^\n*" $content {}]
+		set content [regsub -- "\n+$" $content {}]
+		set content [regsub -all -line "^" $content $prefix]
+		return $content
+	}
+	
 	#
 	# Text structure commands
 	#
@@ -356,18 +365,8 @@ proc mddt_setup_2 {} {
 	
 	proc mddt_dlelement_end {} {
 		if {[ex_cis dlelement]} {
-			
-			# close preceding dlelement, if any
 			set content [ex_cpop dlelement]
-			
-			# strip leading/trailing newlines & blockquote
-			set content [regsub -- "^\n*" $content {}]
-			set content [regsub -- "\n+$" $content {}]
-			set content [regsub -all -line -- "^" $content "> "]
-			
-			# push the indented content to the output buffer
-			# of the parent list (now the current context)
-			ex_cappend $content
+			ex_cappend [mddt_trimblock $content "> "]
 		}
 	}
 	
@@ -382,27 +381,16 @@ proc mddt_setup_2 {} {
 	}
 	
 	proc mddt_olelement_begin {} {
-		# increment the counter (marker) for this ordered list…
+		# increment the counter (marker) for the ordered list
 		ex_cset marker [expr {[ex_cget marker] + 1}]
-		
-		# …and begin a new list element.
 		ex_cpush olelement
 	}
 	
 	proc mddt_olelement_end {} {
 		if {[ex_cis olelement]} {
-			
-			# end this list element and get its contents.
 			set content [ex_cpop olelement]
-			
-			# strip leading/trailing newlines & indent
-			set content [regsub -- "^\n*" $content {}]
-			set content [regsub -- "\n+$" $content {}]
-			set content [regsub -all -line -- "^" $content "\t"]
-			
-			# output element content prefixed with list counter
 			set marker [ex_cget marker]
-			ex_cappend "\n${marker}.${content}"
+			ex_cappend [format "\n%s.%s" $marker [mddt_trimblock $content "\t"]]
 		}
 	}
 	
@@ -412,8 +400,6 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_item {} {
 		# itemized ul list element
-		#return "\n- "
-		
 		mddt_ulelement_end
 		mddt_ulelement_begin
 	}
@@ -424,14 +410,8 @@ proc mddt_setup_2 {} {
 	
 	proc mddt_ulelement_end {} {
 		if {[ex_cis ulelement]} {
-			
 			set content [ex_cpop ulelement]
-			
-			set content [regsub -- "^\n*" $content {}]
-			set content [regsub -- "\n+$" $content {}]
-			set content [regsub -all -line -- "^" $content "\t"]
-			
-			ex_cappend "\n-${content}"
+			ex_cappend [format "\n-%s" [mddt_trimblock $content "\t"]]
 		}
 	}
 	
@@ -446,13 +426,7 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_example_end {} {
 		set text [ex_cpop example]
-		
-		# trim leading/trailing newlines and indent content
-		set text [regsub -- "^\n*" $text {}]
-		set text [regsub -- "\n+$" $text {}]
-		set text [regsub -all -line -- "^" $text "\t"]
-		
-		return "${text}\n\n"
+		return [format "%s\n\n" [mddt_trimblock $text "\t"]]
 	}
 		
 	#
