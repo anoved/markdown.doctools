@@ -54,4 +54,16 @@ mtest ol1 "ol list element buffer" \
 
 }
 
+mtest ul1 "ul list element buffer" \
+{[list_begin itemized]
+[item]one
+[item]two
+[item]three
+[list_end]} \
+{-	one
+-	two
+-	three
+
+}
+
 ::tcltest::cleanupTests
