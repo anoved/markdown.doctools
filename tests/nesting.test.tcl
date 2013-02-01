@@ -275,5 +275,60 @@ mtest n11 "four levels of definition nesting" \
 
 }
 
+mtest n12 "ol with paragraphs" \
+{[list_begin enumerated]
+[enum]one
+[para]foo
+[enum]two
+[para]bar
+[list_end]} \
+{1.	one
+	
+	foo
+2.	two
+	
+	bar
+
+}
+
+mtest n12b "ol with newlines (not paragraphs)" \
+{[list_begin enumerated]
+[enum]one
+foo
+[enum]two
+bar
+[list_end]} \
+{1.	onefoo
+2.	twobar
+
+}
+
+mtest n13 "ul with paragraphs" \
+{[list_begin itemized]
+[item]one
+[para]foo
+[item]two
+[para]bar
+[list_end]} \
+{-	one
+	
+	foo
+-	two
+	
+	bar
+
+}
+
+mtest n13b "ul with newlines (not paragraphs)" \
+{[list_begin itemized]
+[item]one
+foo
+[item]two
+bar
+[list_end]} \
+{-	onefoo
+-	twobar
+
+}
 
 ::tcltest::cleanupTests

@@ -186,7 +186,7 @@ proc mddt_setup_2 {} {
 	}
 	
 	# trim leading and surplus trailing newlines from content, and insert the
-	# prefix at the beginnin gof every line 
+	# prefix at the beginning of every line 
 	proc mddt_trimblock {content {prefix {}}} {
 		set content [regsub -- "^\n*" $content {}]
 		set content [regsub -- "\n+$" $content {}]
