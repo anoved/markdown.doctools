@@ -261,7 +261,7 @@ proc mddt_setup_2 {} {
 			enumerated {
 				# enum (ol)
 				ex_cpush ol
-				ex_cset enum 0
+				ex_cset marker 0
 			}
 			bullet -
 			item -
@@ -289,8 +289,9 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_list_end {} {
 		
-		# close current [dl] list element [if any]
+		# close current list element [if any]
 		mddt_dlelement_end
+		mddt_olelement_end
 	
 		# close current list
 		set type [ex_cname]
@@ -298,20 +299,23 @@ proc mddt_setup_2 {} {
 		
 		# format or indent according if nested in another list
 		# (this should be applied to example blocks as well)
-		switch [ex_cname] {
-			"ul" -
-			"ol" {
-				set text [regsub -- "^\n*" $text {}]
-				set text [regsub -all -line -- "^" $text "\t"]
-				set text "\n${text}"
-			}
-			"dl" -
-			default {
-				set text "${text}\n\n"
-			}
-		}
+# 		switch [ex_cname] {
+# 			"ul" -
+# 			"ol" {
+# 				set text [regsub -- "^\n*" $text {}]
+# 				set text [regsub -all -line -- "^" $text "\t"]
+# 				set text "\n${text}"
+# 			}
+# 			"dl" -
+# 			default {
+# 				set text "${text}\n\n"
+# 			}
+# 		}
 		
-		return $text
+		# [return "${text}\n\n"] is possibly a sufficient replacement for the
+		# switch block above, once all list element buffers are implemented
+		#return $text
+		return "${text}\n\n"
 	}
 	
 	#
@@ -398,9 +402,34 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_enum {} {
 		# enumerated ol list element
-		set counter [ex_cget enum]
-		ex_cset enum [incr counter]
-		return "\n${counter}. "
+		mddt_olelement_end
+		mddt_olelement_begin
+	}
+	
+	proc mddt_olelement_begin {} {
+		# increment the counter (marker) for this ordered list…
+		ex_cset marker [expr {[ex_cget marker] + 1}]
+		# …and begin a new list element.
+		ex_cpush olelement
+	}
+	
+	proc mddt_olelement_end {} {
+		if {[ex_cis olelement]} {
+			
+			# end this list element and get its contents.
+			set content [ex_cpop olelement]
+			
+			# strip leading/trailing newlines & indent
+			set content [regsub -- "^\n*" $content {}]
+			set content [regsub -- "\n+$" $content {}]
+			set content [regsub -all -line -- "^" $content "\t"]
+			
+			# markdown is pretty flexible with list formatting; it's ok
+			# for every line to be indented, and for the same indentation
+			# to appear between the list marker and the content.
+			set marker [ex_cget marker]
+			ex_cappend "${marker}.${content}\n"
+		}
 	}
 	
 	#
