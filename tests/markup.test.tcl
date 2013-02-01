@@ -27,7 +27,7 @@ proc mtest {description dtinput mdoutput} {
 # basic lists
 mtest "enumerated list" \
 		{[list_begin enum][enum]one[enum]two[enum]three[list_end]} \
-		"1. one\n2. two\n3. three\n\n"
+		"1.\tone\n2.\ttwo\n3.\tthree\n\n"
 mtest "itemized list" \
 		{[list_begin item][item]one[item]two[item]three[list_end]} \
 		"- one\n- two\n- three\n\n"

@@ -30,19 +30,19 @@ mtest "nested itemized list" \
 
 mtest "nested enumerated list" \
 		{[list_begin enumerated][enum]one[enum]two[list_begin enumerated][enum]alpha[enum]beta[list_end][enum]three[list_end]} \
-		"1. one\n2. two\n\t1. alpha\n\t2. beta\n3. three\n\n"
+		"1.\tone\n2.\ttwo\n\t1.\talpha\n\t2.\tbeta\n3.\tthree\n\n"
 
 mtest "enumerated list nested in itemized list" \
 		{[list_begin itemized][item]one[item]two[list_begin enumerated][enum]alpha[enum]beta[list_end][item]three[list_end]} \
-		"- one\n- two\n\t1. alpha\n\t2. beta\n- three\n\n"
+		"- one\n- two\n\t1.\talpha\n\t2.\tbeta\n- three\n\n"
 
 mtest "itemized list nested in enumerated list" \
 		{[list_begin enumerated][enum]one[enum]two[list_begin itemized][item]alpha[item]beta[list_end][enum]three[list_end]} \
-		"1. one\n2. two\n\t- alpha\n\t- beta\n3. three\n\n"
+		"1.\tone\n2.\ttwo\n\t- alpha\n\t- beta\n3.\tthree\n\n"
 
 mtest "three levels of nesting" \
 		{[list_begin enumerated][enum]outer[list_begin itemized][item]middle[list_begin enumerated][enum]inner[list_end][list_end][list_end]} \
-		"1. outer\n\t- middle\n\t\t1. inner\n\n"
+		"1.\touter\n\t- middle\n\t\t1.\tinner\n\n"
 
 mtest "nested definition list" \
 		{[list_begin definitions][def foo]one[def bar]two[list_begin definitions][def alpha]zeta[def beta]omega[list_end][def soom]three[list_end]} \
@@ -54,7 +54,7 @@ mtest "itemized list nested in definition list" \
 
 mtest "enumerated list nested in definition list" \
 		{[list_begin definitions][def foo]one[def bar]two[list_begin enumerated][enum]alpha[enum]beta[list_end][def soom]three[list_end]} \
-		"foo\n\n> one\n\nbar\n\n> two\n> \n> 1. alpha\n> 2. beta\n\nsoom\n\n> three\n\n"
+		"foo\n\n> one\n\nbar\n\n> two\n> \n> 1.\talpha\n> 2.\tbeta\n\nsoom\n\n> three\n\n"
 
 mtest "definition list nested in itemized list" \
 		{[list_begin itemized][item]one[item]two[list_begin definitions][def foo]alpha[def bar]beta[list_end][item]three[list_end]} \
@@ -62,7 +62,7 @@ mtest "definition list nested in itemized list" \
 
 mtest "definition list nested in enumerated list" \
 		{[list_begin enumerated][enum]one[enum]two[list_begin definitions][def foo]alpha[def bar]beta[list_end][enum]three[list_end]} \
-		"1. one\n2. two\n\tfoo\n\t\n\t> alpha\n\t\n\tbar\n\t\n\t> beta\n3. three\n\n"
+		"1.\tone\n2.\ttwo\n\tfoo\n\t\n\t> alpha\n\t\n\tbar\n\t\n\t> beta\n3.\tthree\n\n"
 
 mtest "four levels of definition nesting" \
 		{[list_begin definitions][def outer]a[list_begin definitions][def middle]b[list_begin definitions][def extra]c[list_begin definitions][def inner]d[list_end][list_end][list_end][list_end]} \
