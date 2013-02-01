@@ -282,10 +282,15 @@ proc mddt_setup_2 {} {
 		mddt_ulelement_end
 		
 		# close current list
-		set content [ex_cpop [ex_cname]]
-					
+		set type [ex_cname]
+		set content [ex_cpop $type]
+		
+		## hack to obtain required newline spacing with ol/ul nested in dl ##
+		if {[ex_cname] eq "dlelement" && ($type eq "ol" || $type eq "ul")} {
+			set content "\n${content}"
+		}
+		
 		return "${content}\n\n"
-		#return $content
 	}
 	
 	#
@@ -380,9 +385,6 @@ proc mddt_setup_2 {} {
 		# increment the counter (marker) for this ordered list…
 		ex_cset marker [expr {[ex_cget marker] + 1}]
 		
-		# …insert a blank line…
-		#ex_cappend "\n"
-		
 		# …and begin a new list element.
 		ex_cpush olelement
 	}
@@ -400,7 +402,7 @@ proc mddt_setup_2 {} {
 			
 			# output element content prefixed with list counter
 			set marker [ex_cget marker]
-			ex_cappend "${marker}.${content}\n"
+			ex_cappend "\n${marker}.${content}"
 		}
 	}
 	
@@ -429,7 +431,7 @@ proc mddt_setup_2 {} {
 			set content [regsub -- "\n+$" $content {}]
 			set content [regsub -all -line -- "^" $content "\t"]
 			
-			ex_cappend "-${content}\n"
+			ex_cappend "\n-${content}"
 		}
 	}
 	
