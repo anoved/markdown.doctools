@@ -17,7 +17,7 @@ proc mdh {content} {
 
 proc mtest {description dtinput mdoutput} {
 	global testnum
-	test dlbuffer-[incr testnum] $description \
+	test listbuffers-[incr testnum] $description \
 			-setup {::doctools::new doc -format ../markdown.doctools.tcl} \
 			-body {doc format [dth $dtinput]} \
 			-cleanup {doc destroy} \
@@ -41,6 +41,18 @@ bar
 soom
 
 > three
+
+}
+
+mtest "ol list element buffer" \
+{[list_begin enumerated]
+[enum]one
+[enum]two
+[enum]three
+[list_end]} \
+{1.	one
+2.	two
+3.	three
 
 }
 
