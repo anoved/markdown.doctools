@@ -14,8 +14,7 @@ proc mdh {content} {
 	return [format "\n\n# test\n\n# DESCRIPTION\n\n%s" $content]
 }
 
-proc mtest {id description dtinput mdoutput} {
-	set testname [format "%s-%s" [file rootname [file tail [info script]]] $id]
+proc mtest {testname description dtinput mdoutput} {
 	test $testname $description \
 			-setup {::doctools::new doc -format ../markdown.doctools.tcl} \
 			-body {doc format [dth $dtinput]} \

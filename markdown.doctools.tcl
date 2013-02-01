@@ -208,10 +208,6 @@ proc mddt_setup_2 {} {
 				ex_cappend $text
 				set text {}
 			}
-			dl {
-				ex_cappend $text
-				set text {}
-			}
 			default {
 				set text [mddt_collapse_newlines $text]
 			}
@@ -221,15 +217,6 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_para {} {
 		# paragraph - empty line
-		# the reason I'm reluctant to add context rules here as well as in
-		# plain_text is that it seems there are many places where they must
-		# then be enforced - anywhere that newlines may be added to seperate
-		# blocks. Perhaps the solution is a standalone proc that all of these
-		# cases can call to provide "context-sensitive block seperators"
-		# (eg, newlines with proper prefixes/indentation)
-		if {[ex_cis dl]} {
-			return "\n> \n"
-		}
 		return "\n\n"
 	}
 	
@@ -292,30 +279,13 @@ proc mddt_setup_2 {} {
 		# close current list element [if any]
 		mddt_dlelement_end
 		mddt_olelement_end
-	
+		mddt_ulelement_end
+		
 		# close current list
-		set type [ex_cname]
-		set text [ex_cpop $type]
-		
-		# format or indent according if nested in another list
-		# (this should be applied to example blocks as well)
-# 		switch [ex_cname] {
-# 			"ul" -
-# 			"ol" {
-# 				set text [regsub -- "^\n*" $text {}]
-# 				set text [regsub -all -line -- "^" $text "\t"]
-# 				set text "\n${text}"
-# 			}
-# 			"dl" -
-# 			default {
-# 				set text "${text}\n\n"
-# 			}
-# 		}
-		
-		# [return "${text}\n\n"] is possibly a sufficient replacement for the
-		# switch block above, once all list element buffers are implemented
-		#return $text
-		return "${text}\n\n"
+		set content [ex_cpop [ex_cname]]
+					
+		return "${content}\n\n"
+		#return $content
 	}
 	
 	#
@@ -409,6 +379,10 @@ proc mddt_setup_2 {} {
 	proc mddt_olelement_begin {} {
 		# increment the counter (marker) for this ordered list…
 		ex_cset marker [expr {[ex_cget marker] + 1}]
+		
+		# …insert a blank line…
+		#ex_cappend "\n"
+		
 		# …and begin a new list element.
 		ex_cpush olelement
 	}
@@ -424,9 +398,7 @@ proc mddt_setup_2 {} {
 			set content [regsub -- "\n+$" $content {}]
 			set content [regsub -all -line -- "^" $content "\t"]
 			
-			# markdown is pretty flexible with list formatting; it's ok
-			# for every line to be indented, and for the same indentation
-			# to appear between the list marker and the content.
+			# output element content prefixed with list counter
 			set marker [ex_cget marker]
 			ex_cappend "${marker}.${content}\n"
 		}
@@ -438,7 +410,27 @@ proc mddt_setup_2 {} {
 	
 	proc fmt_item {} {
 		# itemized ul list element
-		return "\n- "
+		#return "\n- "
+		
+		mddt_ulelement_end
+		mddt_ulelement_begin
+	}
+	
+	proc mddt_ulelement_begin {} {
+		ex_cpush ulelement
+	}
+	
+	proc mddt_ulelement_end {} {
+		if {[ex_cis ulelement]} {
+			
+			set content [ex_cpop ulelement]
+			
+			set content [regsub -- "^\n*" $content {}]
+			set content [regsub -- "\n+$" $content {}]
+			set content [regsub -all -line -- "^" $content "\t"]
+			
+			ex_cappend "-${content}\n"
+		}
 	}
 	
 	#
