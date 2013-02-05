@@ -331,4 +331,41 @@ bar
 
 }
 
+# This test passes with the current behavior, which I believe is wrong.
+# list_begin marks the start of a new list block, and as such the content it
+# introduces should be separated from preceding content with an empty line.
+# (If a list is not preceded by an empty line, markdown will not in fact
+# recognize it as a list, and it will be appended to the preceding paragraph.)
+# It should not be necessary to insert a [para] tag before a list in order to
+# introduce this empty line, which is what the second part of the test does.
+
+# However, simply prepending newlines to the list content does not seem to work
+# as it adds excess lines that are not condensed in the case of nested lists.
+# (Those cases may be peculiar in that they are blocks whose first content is
+# another block - perhaps we are missing a newline-collapsing opportunity.)
+
+mtest n14 "para at list start" \
+{foobar
+[list_begin itemized]
+[item]foo
+[item]bar
+[list_end]
+
+barsoom
+[para]
+[list_begin itemized]
+[item]bar
+[item]soom
+[list_end]} \
+{foobar
+-	foo
+-	bar
+
+barsoom
+
+-	bar
+-	soom
+
+}
+
 ::tcltest::cleanupTests
