@@ -1,5 +1,7 @@
 #!/usr/bin/tclsh
 
+# This script converts doctools stdin to markdown stdout using markdown.doctools.tcl
+
 package require doctools
 
 # use the Markdown module by default
